@@ -26,7 +26,7 @@ namespace lock {
 namespace core {
 
 /**
- * @brief Authentication data.
+ * @brief Authentication request data.
  */
 struct AuthRequest {
   std::string username;               ///< Username to authenticate.
@@ -40,15 +40,15 @@ struct AuthRequest {
 struct AuthResult {
   bool success = false;          ///< Whether authentication succeeded.
   std::string error_message;     ///< Error message on failure.
-  bool locked_out = false;       ///< Whether user is locked out.
+  bool locked_out = false;       ///< Whether the user is locked out.
   uint32_t lockout_minutes = 0;  ///< Remaining lockout minutes.
 };
 
 /**
  * @brief Abstract interface for authentication providers.
- * @note If you want to implement this abstract interface, you'd better use PAM
- *       based authentication.
- * @warning authentication must not be blocking!
+ *
+ * Implementations must provide PAM-based or other authentication mechanisms.
+ * They are allowed to block while the user is being verified.
  */
 class Authenticator {
  public:
@@ -61,22 +61,21 @@ class Authenticator {
   Authenticator& operator=(Authenticator&&) = delete;
 
   /**
-   * @brief This function performs authentication.
-   * 
+   * @brief Performs authentication.
    * @param request The authentication request data.
    * @return The result of the authentication.
-   * @note This operation may block waiting for PAM response.
+   * @note This operation may block while waiting for the PAM response.
    */
   virtual AuthResult Authenticate(const AuthRequest& request) = 0;
 
   /**
-   * @brief Cancels ongoing authentication.
+   * @brief Cancels the ongoing authentication.
    */
   virtual void Cancel() = 0;
 
   /**
-   * @brief Checks if authentication is in progress.
-   * @return @c true of authenticating is in progress and @c false otherwise.
+   * @brief Checks whether authentication is in progress.
+   * @return @c true if authentication is in progress, @c false otherwise.
    */
   virtual bool IsAuthenticating() const = 0;
 
@@ -89,7 +88,7 @@ class Authenticator {
 
 /**
  * @brief Creates a PAM-based authenticator.
- * @return The unique pointer to the authticator.
+ * @return The unique pointer to the authenticator.
  */
 std::unique_ptr<Authenticator> CreatePamAuthenticator();
 
