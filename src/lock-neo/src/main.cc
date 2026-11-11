@@ -512,6 +512,7 @@ int main(int argc, char* argv[]) {
     properties.insert(QStringLiteral("virtualKeyboardAvailable"),
                       virtualKeyboardAvailable);
     properties.insert(QStringLiteral("testMode"), demo);
+    properties.insert(QStringLiteral("x11Overlay"), !demo && useX11);
 
     QObject* object = component.createWithInitialProperties(properties);
     auto* window = qobject_cast<QQuickWindow*>(object);
@@ -522,6 +523,15 @@ int main(int argc, char* argv[]) {
     }
 
     window->setScreen(screen);
+
+    // On X11 locking all screen instead of just primary screen.
+    if (!demo && useX11) {
+      auto cover = [window, screen] {
+        window->setGeometry(screen->geometry());
+      };
+      cover();
+      QObject::connect(screen, &QScreen::geometryChanged, window, cover);
+    }
 
     if (!demo && !useX11) {
       const bool usingSessionLock =

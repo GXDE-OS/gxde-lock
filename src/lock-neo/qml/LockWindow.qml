@@ -23,6 +23,9 @@ Window {
   property bool virtualKeyboardAvailable: false
   property bool testMode: false
   property bool shown: false
+  // X11 production mode with override redirect, bypassing the WM so that nothing
+  // draws beyond it, so user's screen shall be "securely" locked.
+  property bool x11Overlay: false
 
   width: testMode ? 1100 : 800
   height: testMode ? 720 : 600
@@ -32,9 +35,12 @@ Window {
   // Anim: From transparent to opaque
   color: lockScreen.unlocking ? "transparent" : "#000000"
   flags: testMode ? Qt.Window
-    : (Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+    : (x11Overlay
+       ? (Qt.FramelessWindowHint | Qt.X11BypassWindowManagerHint)
+       : (Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint))
   visibility: testMode ? Window.Windowed
-    : (shown ? Window.FullScreen : Window.Hidden)
+    : (!shown ? Window.Hidden
+       : (x11Overlay ? Window.Windowed : Window.FullScreen))
   title: qsTr("GXDE Lock Screen")
 
   onClosing: function(close) {

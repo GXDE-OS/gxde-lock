@@ -93,7 +93,8 @@ QRect x11OutputGeometry(QScreen *screen) {
     XCloseDisplay(display);
 
     QRect geometry = matchedGeometry;
-    if (geometry.isEmpty() && activeOutputs == 1)
+    if (geometry.isEmpty() && activeOutputs == 1
+        && QGuiApplication::screens().size() == 1)
         geometry = onlyGeometry;
     if (geometry.isEmpty())
         return QRect();
