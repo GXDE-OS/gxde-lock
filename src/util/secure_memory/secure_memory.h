@@ -51,10 +51,25 @@ void UnlockMemory(void* ptr, std::size_t size);
 void SecureClear(void* ptr, std::size_t size);
 
 /**
- * @brief Zeroes a @c std::string and clears it.
+ * @brief Zeroes a string and clears it.
+ *
+ * Accepts any @c std::basic_string instantiation, including the locked-memory
+ * @c SecureString, so that wiping a secret never depends on its allocator.
+ *
+ * @tparam Char   Character type of the string.
+ * @tparam Traits Character traits of the string.
+ * @tparam Alloc  Allocator of the string.
  * @param str The string to wipe.
  */
-void SecureClear(std::string& str);
+template <typename Char, typename Traits, typename Alloc>
+void SecureClear(std::basic_string<Char, Traits, Alloc>& str) {
+  if (str.empty()) {
+    return;
+  }
+
+  SecureClear(str.data(), str.size() * sizeof(Char));
+  str.clear();
+}
 
 /**
  * @brief Allocates locked memory for @p size bytes.

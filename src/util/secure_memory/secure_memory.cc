@@ -61,15 +61,6 @@ void SecureClear(void* ptr, std::size_t size) {
   explicit_bzero(ptr, size);
 }
 
-void SecureClear(std::string& str) {
-  if (str.empty()) {
-    return;
-  }
-
-  explicit_bzero(str.data(), str.size());
-  str.clear();
-}
-
 void* SecureAlloc(std::size_t size) {
   if (size == 0) {
     return nullptr;
