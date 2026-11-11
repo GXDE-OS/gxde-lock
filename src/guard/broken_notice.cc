@@ -141,21 +141,21 @@ QString BrokenNotice::Message() const {
 
   QString text;
   if (chinese) {
-    text = QStringLiteral("锁屏程序反复崩溃，已无法在这里解锁。\n\n"
-                          "请按 %1 切换到文本终端，登录后执行：\n\n")
+    text = QStringLiteral("GXDE Lock遭遇反复崩溃，系统无法解锁。\n\n"
+                          "请按下%1切换到TTY，并于登录后执行：\n\n")
                .arg(console);
     if (logind_.IsValid()) {
-      text += QStringLiteral("loginctl unlock-session %1\n\n或者：%2\n\n")
+      text += QStringLiteral("loginctl unlock-session %1\n\n或：%2\n\n")
                   .arg(logind_.Id(), kill_command);
     } else {
       text += kill_command + QStringLiteral("\n\n");
     }
-    text += vt > 0 ? QStringLiteral("然后按 Ctrl+Alt+F%1 回到这里。").arg(vt)
-                   : QStringLiteral("然后切换回图形会话。");
+    text += vt > 0 ? QStringLiteral("随后按Ctrl+Alt+F%1回到这里").arg(vt)
+                   : QStringLiteral("随后切换回图形会话");
   } else {
     text = QStringLiteral(
-               "The screen locker keeps crashing and cannot unlock here.\n\n"
-               "Switch to a text console with %1, log in and run:\n\n")
+               "GXDE Lock crashed repeatedly and cannot unlock the system.\n\n"
+               "Press %1 to switch to a TTY, log in and run:\n\n")
                .arg(console);
     if (logind_.IsValid()) {
       text += QStringLiteral("loginctl unlock-session %1\n\nor: %2\n\n")
