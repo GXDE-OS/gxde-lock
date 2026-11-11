@@ -56,39 +56,15 @@ endif()
 boption(CRASH_HANDLER "Crash Handling" ON)
 boption(SOCKETS "Unix Sockets" ON)
 boption(WAYLAND "Wayland" ON)
-boption(WAYLAND_WLR_LAYERSHELL "  Wlroots Layer-Shell" ON REQUIRES WAYLAND)
 boption(WAYLAND_SESSION_LOCK "  Session Lock" ON REQUIRES WAYLAND)
-boption(WAYLAND_TOPLEVEL_MANAGEMENT "  Foreign Toplevel Management" ON REQUIRES WAYLAND)
-boption(HYPRLAND "  Hyprland" ON REQUIRES WAYLAND)
-boption(HYPRLAND_IPC "    Hyprland IPC" ON REQUIRES HYPRLAND)
-boption(HYPRLAND_GLOBAL_SHORTCUTS "    Hyprland Global Shortcuts" ON REQUIRES HYPRLAND)
-boption(HYPRLAND_FOCUS_GRAB "    Hyprland Focus Grabbing" ON REQUIRES HYPRLAND)
-boption(HYPRLAND_SURFACE_EXTENSIONS "    Hyprland Surface Extensions" ON REQUIRES HYPRLAND)
-boption(SCREENCOPY "  Screencopy" ON REQUIRES WAYLAND)
-boption(SCREENCOPY_ICC "    Image Copy Capture" ON REQUIRES WAYLAND)
-boption(SCREENCOPY_WLR "    Wlroots Screencopy" ON REQUIRES WAYLAND)
-boption(SCREENCOPY_HYPRLAND_TOPLEVEL "    Hyprland Toplevel Export" ON REQUIRES WAYLAND)
 boption(X11 "X11" ON)
-boption(I3 "I3/Sway" ON)
-boption(I3_IPC "  I3/Sway IPC" ON REQUIRES I3)
-boption(SERVICE_STATUS_NOTIFIER "System Tray" ON)
-boption(SERVICE_PIPEWIRE "PipeWire" ON)
-boption(SERVICE_MPRIS "Mpris" ON)
 boption(SERVICE_PAM "Pam" ON)
-boption(SERVICE_POLKIT "Polkit" ON)
-boption(SERVICE_GREETD "Greetd" ON)
-boption(SERVICE_UPOWER "UPower" ON)
-boption(SERVICE_NOTIFICATIONS "Notifications" ON)
-boption(BLUETOOTH "Bluetooth" ON)
-boption(NETWORK "Network" ON)
 
 include(cmake/install-qml-module.cmake)
 include(cmake/util.cmake)
 
 add_compile_options(-Wall -Wextra -Wno-vla-cxx-extension)
 
-# pipewire defines these, breaking PCH
-add_compile_definitions(_REENTRANT)
 add_compile_options(-fno-strict-overflow)
 
 if (FRAME_POINTERS)
@@ -130,14 +106,6 @@ if (WAYLAND)
 	list(APPEND QT_PRIVDEPS WaylandClientPrivate)
 endif()
 
-if (SERVICE_STATUS_NOTIFIER OR SERVICE_MPRIS OR SERVICE_UPOWER OR SERVICE_NOTIFICATIONS OR BLUETOOTH OR NETWORK)
-	set(DBUS ON)
-endif()
-
-if (DBUS)
-	list(APPEND QT_FPDEPS DBus)
-endif()
-
 find_package(Qt6 REQUIRED COMPONENTS ${QT_FPDEPS})
 
 # In Qt 6.10, private dependencies are required to be explicit,
@@ -166,14 +134,3 @@ install(CODE "
 		${CMAKE_INSTALL_FULL_BINDIR}/quickshell \$ENV{DESTDIR}${CMAKE_INSTALL_FULL_BINDIR}/qs
 	)
 ")
-
-install(
-	FILES ${CMAKE_SOURCE_DIR}/assets/org.quickshell.desktop
-	DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
-)
-
-install(
-	FILES ${CMAKE_SOURCE_DIR}/assets/quickshell.svg
-	DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps
-	RENAME org.quickshell.svg
-)

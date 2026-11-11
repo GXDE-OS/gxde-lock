@@ -11,14 +11,9 @@ add_subdirectory(window)
 add_subdirectory(io)
 add_subdirectory(widgets)
 add_subdirectory(ui)
-add_subdirectory(windowmanager)
 
 if (CRASH_HANDLER)
 	add_subdirectory(crash)
-endif()
-
-if (DBUS)
-	add_subdirectory(dbus)
 endif()
 
 if (WAYLAND)
@@ -29,16 +24,4 @@ if (X11)
 	add_subdirectory(x11)
 endif()
 
-if (I3)
-	add_subdirectory(x11/i3)
-endif()
-
 add_subdirectory(services)
-
-if (BLUETOOTH)
-	add_subdirectory(bluetooth)
-endif()
-
-if (NETWORK)
-	add_subdirectory(network)
-endif()

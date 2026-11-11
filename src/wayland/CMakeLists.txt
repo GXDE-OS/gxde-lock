@@ -99,50 +99,10 @@ target_link_options(quickshell PRIVATE "LINKER:--export-dynamic-symbol=wl_proxy_
 # required to make sure the constructor is linked
 add_library(quickshell-wayland-init OBJECT init.cpp)
 
-set(WAYLAND_MODULES)
-
-if (WAYLAND_WLR_LAYERSHELL)
-	add_subdirectory(wlr_layershell)
-	target_compile_definitions(quickshell-wayland PRIVATE QS_WAYLAND_WLR_LAYERSHELL)
-	target_compile_definitions(quickshell-wayland-init PRIVATE QS_WAYLAND_WLR_LAYERSHELL)
-
-	list(APPEND WAYLAND_MODULES Quickshell.Wayland._WlrLayerShell)
-endif()
-
 if (WAYLAND_SESSION_LOCK)
 	target_sources(quickshell-wayland PRIVATE session_lock.cpp)
 	add_subdirectory(session_lock)
 endif()
-
-if (WAYLAND_TOPLEVEL_MANAGEMENT)
-	add_subdirectory(toplevel)
-	list(APPEND WAYLAND_MODULES Quickshell.Wayland._ToplevelManagement)
-endif()
-
-if (SCREENCOPY)
-	add_subdirectory(buffer)
-	add_subdirectory(screencopy)
-	list(APPEND WAYLAND_MODULES Quickshell.Wayland._Screencopy)
-endif()
-
-
-if (HYPRLAND)
-	add_subdirectory(hyprland)
-endif()
-
-add_subdirectory(background_effect)
-list(APPEND WAYLAND_MODULES Quickshell.Wayland._BackgroundEffect)
-
-add_subdirectory(idle_inhibit)
-list(APPEND WAYLAND_MODULES Quickshell.Wayland._IdleInhibitor)
-
-add_subdirectory(idle_notify)
-list(APPEND WAYLAND_MODULES Quickshell.Wayland._IdleNotify)
-
-add_subdirectory(shortcuts_inhibit)
-list(APPEND WAYLAND_MODULES Quickshell.Wayland._ShortcutsInhibitor)
-
-add_subdirectory(windowmanager)
 
 # widgets for qmenu
 target_link_libraries(quickshell-wayland PRIVATE
@@ -155,7 +115,6 @@ qt_add_qml_module(quickshell-wayland
 	URI Quickshell.Wayland
 	VERSION 0.1
 	DEPENDENCIES QtQuick
-	IMPORTS ${WAYLAND_MODULES}
 )
 
 qs_add_module_deps_light(quickshell-wayland quickshell-core)
