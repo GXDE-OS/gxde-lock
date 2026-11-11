@@ -44,6 +44,7 @@ signals:
 
 private:
     void onUserAdded(const QString &user) override;
+    void addSessionUserIfMissing();  // the locked user must always be present
     void slotRequestChanged();                          // feed the password to PAM
     void onAuthentication(const QString &user, bool ok);  // unlock result
     void onFingerprintMatched();

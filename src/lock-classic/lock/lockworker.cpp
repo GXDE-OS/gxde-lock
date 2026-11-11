@@ -28,6 +28,7 @@
 #include "AuthRequest.h"
 #include "AuthPrompt.h"
 
+#include <pwd.h>
 #include <unistd.h>
 
 #include <QDebug>
@@ -75,6 +76,24 @@ LockWorker::LockWorker(SessionBaseModel* const model, QObject* parent)
         initDBus();
         initData();
     }
+    addSessionUserIfMissing();
+}
+
+void LockWorker::addSessionUserIfMissing() {
+    const std::shared_ptr<User> current = m_model->currentUser();
+    if (current && current->uid() == m_currentUserUid) {
+        return;
+    }
+
+    const struct passwd *pw = getpwuid(m_currentUserUid);
+    if (!pw || !pw->pw_name) {
+        qCritical() << "(LockWorker) No passwd entry for UID"
+                    << m_currentUserUid << "- cannot authenticate";
+        return;
+    }
+    qInfo() << "(LockWorker) Session user is not in the user list; adding"
+            << pw->pw_name;
+    onUserAdded(QString::fromLocal8Bit(pw->pw_name));
 }
 
 void LockWorker::switchToUser(std::shared_ptr<User> user) {
