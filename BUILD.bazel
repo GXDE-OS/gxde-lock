@@ -19,6 +19,7 @@ pkg_files(
     name = "libexec_pkg",
     srcs = [
         "//src/auth-helper:gxde-lock-auth-helper",
+        "//src/guard:gxde-lock-guard",
         "//src/system:gxde-lock-system",
     ],
     attributes = pkg_attributes(mode = "0755"),

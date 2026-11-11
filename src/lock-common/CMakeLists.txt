@@ -33,6 +33,8 @@ set(LOCK_BACKEND_SOURCES
     "${LOCK_REPO_ROOT}/src/common/LockAppearance.cpp"
     "${LOCK_REPO_ROOT}/src/common/FingerprintProbe.cpp"
     "${LOCK_REPO_ROOT}/src/common/FingerprintSession.cpp"
+    "${LOCK_REPO_ROOT}/src/common/LockState.cpp"
+    "${LOCK_REPO_ROOT}/src/common/LogindSession.cpp"
     ${LOCK_VENDOR_SOURCES}
     ${LOCK_AUTH_FILES}
 )
@@ -51,6 +53,8 @@ set(LOCK_BACKEND_HEADERS
     "${LOCK_REPO_ROOT}/src/common/LockAppearance.h"
     "${LOCK_REPO_ROOT}/src/common/FingerprintProbe.h"
     "${LOCK_REPO_ROOT}/src/common/FingerprintSession.h"
+    "${LOCK_REPO_ROOT}/src/common/LockState.h"
+    "${LOCK_REPO_ROOT}/src/common/LogindSession.h"
     ${LOCK_VENDOR_HEADERS}
 )
 

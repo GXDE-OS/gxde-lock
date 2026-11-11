@@ -245,6 +245,7 @@ int main(int argc, char *argv[])
 
     SessionBaseModel *model = new SessionBaseModel(SessionBaseModel::AuthType::LockType);
     LockWorker *worker = new LockWorker(model); //
+    worker->enableSessionIntegration();
     PropertyGroup *property_group = new PropertyGroup(worker);
 
     property_group->addProperty("contentVisible");

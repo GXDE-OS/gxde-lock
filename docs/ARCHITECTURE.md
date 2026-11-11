@@ -1,12 +1,12 @@
 ## Introduction
-gxde-lock locks a running desktop session. It has no daemon of its own and
-never starts sessions; it consists of two lock screen frontends and two small
-helpers.
+gxde-lock locks a running desktop session. It never starts sessions; it
+consists of two lock screen frontends, a guard that keeps one of them running,
+and two small helpers.
 
 ## Lock screens
 `gxde-lock-classic` (DTK widgets) and `gxde-lock-neo` (Qt Quick) run as the
-session user. The classic binary is the stable entry point: the XDG autostart
-entry and the session-bus activation file both start it, and it execs
+session user. The classic binary is the stable entry point: `gxde-lock-guard`
+(see below) starts it, and it execs
 `gxde-lock-neo` with the same arguments when the configured style is
 `modern`. Both share the backend in `src/lock-common` and
 `src/lock-classic/lock`:
@@ -16,7 +16,19 @@ entry and the session-bus activation file both start it, and it execs
 - `WaylandSessionLockIntegration` implements `ext-session-lock-v1`, with LayerShellQt as
   the fallback; on X11 the windows grab the keyboard;
 - `GxdeLockService` is the public session-bus API (`top.gxde.Lock`);
+- `LogindSession` follows `loginctl lock-session`/`unlock-session` and sets
+  the session's `LockedHint`;
 - `LockStyleManager` re-reads the style and requests a handoff after unlock.
+
+## Guard
+`gxde-lock-guard` is what the autostart entry and the session-bus activation
+file start. It runs `gxde-lock-classic` and waits for it. If the locker dies
+while the screen is locked (the lockers keep a flag in `$XDG_RUNTIME_DIR`
+while locked), the guard starts a new one that locks at once; on Wayland the
+new ext-session-lock client replaces the abandoned lock. After three crashes
+in a minute it runs itself with `--notice`: a raster-only lock surface that
+explains how to unlock from a text console with `loginctl unlock-session`
+(or SIGUSR1) and then hands control back to a fresh locker.
 
 ## Authentication
 `SDDM::Auth` starts `gxde-lock-auth-helper` as the session user and talks to it

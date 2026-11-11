@@ -181,6 +181,10 @@ add_executable(gxde-lock-classic
     "${LOCK_REPO_ROOT}/src/common/FingerprintProbe.h"
     "${LOCK_REPO_ROOT}/src/common/FingerprintSession.cpp"
     "${LOCK_REPO_ROOT}/src/common/FingerprintSession.h"
+    "${LOCK_REPO_ROOT}/src/common/LockState.cpp"
+    "${LOCK_REPO_ROOT}/src/common/LockState.h"
+    "${LOCK_REPO_ROOT}/src/common/LogindSession.cpp"
+    "${LOCK_REPO_ROOT}/src/common/LogindSession.h"
     lock/images.qrc
     lock/logintheme.qrc
     ${NEO_WIDGET_RESOURCES}

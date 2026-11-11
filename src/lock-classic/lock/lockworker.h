@@ -5,13 +5,14 @@
 // DBusLockService / Hotzone / Accounts / Logined) is gone. Unlock reuses
 // SDDM::Auth in "auth-only" mode: gxde-lock-auth-helper runs the gxde-lock PAM
 // stack and exits on success without starting a session. No hand-rolled
-// PAM and no direct logind here.
+// PAM; logind is only watched for lock/unlock requests (LogindSession).
 
 #include "userinfo.h"
 #include "authinterface.h"
 
 #include "Auth.h"  // SDDM::Auth (src/auth)
 #include "fingerprintunlock.h"
+#include "LogindSession.h"
 
 #include <QObject>
 
@@ -36,6 +37,11 @@ public:
     gxde::lock::FingerprintUnlock *fingerprint() const { return m_fingerprint; }
     void startFingerprint();
 
+    // Real lockers only (not --test-mode): follow `loginctl lock-session` /
+    // `unlock-session`, mirror the lock state into logind's LockedHint and
+    // the runtime flag gxde-lock-guard reads after a crash.
+    void enableSessionIntegration();
+
 signals:
     // Emitted when a successful authentication is about to perform a power
     // action instead of simply unlocking the session. The QML frontend uses
@@ -50,6 +56,7 @@ private:
     void onFingerprintMatched();
     void onFingerprintRejected(const QString &message);
     void finishUnlock();  // after a password or a finger: power action or unlock
+    void onLogindUnlock();  // loginctl unlock-session: unlock without a power action
 
     void requestSystemPowerAction(const QString &method);   // gxde-lock-system
     void requestLogin1PowerAction(const QString &method);  // fallback
@@ -57,6 +64,7 @@ private:
     bool m_authenticating;
     SDDM::Auth *m_auth;
     gxde::lock::FingerprintUnlock *m_fingerprint;
+    gxde::lock::LogindSession *m_logind = nullptr;
     QString m_password;
 };
 

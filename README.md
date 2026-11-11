@@ -29,8 +29,9 @@ to lock and unlock a running session:
 
 | Component | Installed as | Source | Purpose |
 | --- | --- | --- | --- |
-| Classic lock screen | `/usr/bin/gxde-lock-classic` | `src/lock-classic` | DTK widget lock screen. Also the stable autostart and D-Bus entry point; hands off to the modern lock screen when that style is selected. |
+| Classic lock screen | `/usr/bin/gxde-lock-classic` | `src/lock-classic` | DTK widget lock screen. Also the stable entry point behind the guard; hands off to the modern lock screen when that style is selected. |
 | Modern lock screen | `/usr/bin/gxde-lock-neo` | `src/lock-neo` | Qt Quick lock screen backed by `src/lock-common`. |
+| Guard | `<libexec>/gxde-lock-guard` | `src/guard` | Started by autostart and D-Bus activation. Runs the classic lock screen, restarts it if it crashes, and holds the lock with a crash notice when it keeps crashing. |
 | Auth helper | `<libexec>/gxde-lock-auth-helper` | `src/auth-helper` | Runs the `gxde-lock` PAM stack as the locked user; never opens a session. |
 | Root helper | `<libexec>/gxde-lock-system` | `src/system` | System-bus service, activated on demand, that stores the settings shared by all users and performs power actions. |
 
@@ -86,11 +87,22 @@ cd arch && makepkg -si  # Arch Linux
 
 ## Usage
 The package installs an XDG autostart entry, so the locker starts with the
-session (`gxde-lock-classic --daemon --auto-enroll`). It also registers:
+session (`gxde-lock-guard --daemon --auto-enroll`, which runs
+`gxde-lock-classic` with those arguments). It also registers:
 
 * `org.freedesktop.ScreenSaver` and the Deepin `com.deepin.dde.lockFront`
   names, so desktop "Lock Screen" actions reach it;
-* the Super+L shortcut through KGlobalAccel, unless something else owns it.
+* the Super+L shortcut through KGlobalAccel, unless something else owns it;
+* the logind session's `Lock`/`Unlock` signals, so `loginctl lock-session` and
+  `loginctl unlock-session` work, and the session's `LockedHint`.
+
+### When the lock screen crashes
+If the locker dies while the screen is locked, `gxde-lock-guard` starts a new
+one that takes the lock over at once (on Wayland the compositor keeps the
+session locked in the meantime). After three crashes within a minute it shows
+a plain notice instead, like Plasma does: switch to a text console, log in and
+run the `loginctl unlock-session <id>` (or `kill -USR1 <pid>`) command it
+displays, then switch back. There is deliberately no unlock shortcut.
 
 Lock right away:
 ```bash

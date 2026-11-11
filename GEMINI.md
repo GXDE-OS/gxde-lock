@@ -11,7 +11,8 @@ greeters, session helpers, themes) is not part of this repository.
 
 | Component | Binary / target | Source | Purpose |
 | --- | --- | --- | --- |
-| Classic lock screen | `gxde-lock-classic` | `src/lock-classic` | DTK2Widget lock screen inherited from DDE `session-ui`. Stable autostart/D-Bus entry point; execs `gxde-lock-neo` for the modern style. |
+| Classic lock screen | `gxde-lock-classic` | `src/lock-classic` | DTK2Widget lock screen inherited from DDE `session-ui`. Stable entry point (run by the guard); execs `gxde-lock-neo` for the modern style. |
+| Guard | `gxde-lock-guard` (libexec) | `src/guard` | Autostart/D-Bus entry point. Supervises the locker, restarts it locked after a crash, shows the crash notice (`--notice`) after repeated crashes. |
 | Modern lock screen | `gxde-lock-neo` | `src/lock-neo` | Qt Quick lock screen backed by `src/lock-common`. |
 | Shared lock backend | `gxde-lock-backend`, `gxde-lock-common` (static) | `src/lock-common`, `src/lock-classic/lock` | PAM worker, fingerprint unlock, Wayland session lock, D-Bus surface, style resolution, media/volume/notifications. |
 | Auth helper | `gxde-lock-auth-helper` (libexec) | `src/auth-helper` | Runs the `gxde-lock` PAM stack as the session user; authentication only. |
@@ -39,7 +40,8 @@ Key facts:
 | --- | --- |
 | `src/auth` | `SDDM::Auth` client: spawns the auth helper and speaks its socket protocol. |
 | `src/auth-helper` | `gxde-lock-auth-helper`: `HelperApp`, `PamBackend`, `PamHandle`. |
-| `src/common` | `Constants.h.in`, `SafeDataStream`, `MessageHandler`, `LockAppearance` (wallpaper/cursor state), `LockCursor`, `LockScale`, `SystemDefaults`, `FingerprintProbe`, `FingerprintSession`. |
+| `src/common` | `Constants.h.in`, `SafeDataStream`, `MessageHandler`, `LockAppearance` (wallpaper/cursor state), `LockCursor`, `LockScale`, `SystemDefaults`, `FingerprintProbe`, `FingerprintSession`, `LogindSession` (logind Lock/Unlock, LockedHint), `LockState` (runtime lock flag read by the guard). |
+| `src/guard` | `gxde-lock-guard`: `LockGuard` (supervisor), `BrokenNotice` and `NoticeWindow` (crash notice). |
 | `src/lock-classic` | DTK classic lock screen. `lock/` holds the locker and backend pieces (`LockWorker`, `LockShortcutManager`/`GxdeLockService`, `WaylandSessionLockIntegration`, `FingerprintUnlock`); `widgets/`, `session_widgets/`, `global_util/` hold the DDE widgets. |
 | `src/lock-common` | QML-facing facade (`LockBackend`, `UserListModel`), `LockStyleResolver`, `LockStyleManager`, media/volume/notification helpers and their tests. |
 | `src/lock-neo` | `gxde-lock-neo`: `src/main.cc`, `qml/`, `icons/`, `res/` (power/keyboard icons and the virtual keyboard style). |
@@ -51,7 +53,9 @@ Key facts:
 
 ## 3. Runtime Architecture
 
-- The XDG autostart entry runs `gxde-lock-classic --daemon --auto-enroll`.
+- The XDG autostart entry (and session-bus activation) runs
+  `gxde-lock-guard --daemon --auto-enroll`, which runs `gxde-lock-classic`
+  with the same arguments.
   The locker owns `top.gxde.Lock` (session bus), `org.freedesktop.ScreenSaver`
   and `com.deepin.dde.lockFront`, and registers Super+L via KGlobalAccel
   without stealing an existing binding.
@@ -72,6 +76,13 @@ Key facts:
   descriptors, never as caller-supplied paths.
 - Per-user lock wallpaper overrides stay in
   `~/.local/share/gxde-lock/lock-wallpaper-override` and never go through root.
+- Crash recovery: the lockers keep `$XDG_RUNTIME_DIR/gxde-lock/locked-<display>`
+  while locked. When the locker dies, the guard restarts it without
+  `--daemon` if that flag exists (a new ext-session-lock client replaces the
+  abandoned lock), otherwise with `--daemon`. Three crashes within 60 s while
+  locked switch to `gxde-lock-guard --notice`, which holds the lock and
+  explains `loginctl unlock-session`; it exits after logind `Unlock` or
+  SIGUSR1, and the guard restarts the daemon.
 - A style change while locked is deferred until unlock; the locker then
   releases its D-Bus names (and neo's instance lock) and execs the other binary
   with `--daemon`.
@@ -137,7 +148,11 @@ the UI without locking (any password works, `Esc` exits).
   `namespace SDDM`.
 - Writing configuration must preserve unrelated keys and comments
   (`gxde::SaveGeneralSetting`) and must be atomic.
-- Anti-lockout: unlocking requires PAM success. PAM stacks must not contain
+- Anti-lockout: unlocking requires PAM success, or logind's `Unlock` for the
+  session (`loginctl unlock-session`, which logind only accepts from the
+  session owner or an administrator). Never add an unlock shortcut. Every
+  crash path must end in a running locker or the crash notice, never an
+  abandoned lock. PAM stacks must not contain
   checks that can refuse a user who is already logged in (`pam_nologin`,
   `pam_shells`, `user != root`).
 - When changing the D-Bus API, update `README.md`/`README.zh.md`,

@@ -66,3 +66,19 @@ qt_cc_library(
     hdrs = ["FingerprintProbe.h"],
     includes = ["."],
 )
+
+# logind lock/unlock requests and the lock-state flag read by
+# gxde-lock-guard; shared by the lockers and the guard.
+qt_cc_library(
+    name = "lock_session",
+    srcs = [
+        "LockState.cpp",
+        "LogindSession.cpp",
+    ],
+    hdrs = [
+        "LockState.h",
+        "LogindSession.h",
+    ],
+    includes = ["."],
+    moc_hdrs = ["LogindSession.h"],
+)

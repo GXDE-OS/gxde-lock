@@ -18,7 +18,7 @@
  * paths (e.g. DeepinAuthFramework, DBusLockService, etc.) are NO LONGER
  * available, so we reuse SDDM::Auth in "auth-only" mode:
  * gxde-lock-auth-helper runs the gxde-lock PAM stack and exits on success
- * without starting a session. No hand-rolled PAM, no direct logind.
+ * without starting a session. No hand-rolled PAM.
  */
 // PATCHS
 #include "lockworker.h"
@@ -27,6 +27,8 @@
 
 #include "AuthRequest.h"
 #include "AuthPrompt.h"
+#include "LockState.h"
+#include "LogindSession.h"
 
 #include <pwd.h>
 #include <unistd.h>
@@ -248,6 +250,55 @@ void LockWorker::finishUnlock() {
         break;
     }
 
+    emit m_model->authFinished(true);
+}
+
+void LockWorker::enableSessionIntegration() {
+    if (m_logind)
+        return;
+
+    m_logind = new gxde::lock::LogindSession(this);
+    connect(m_logind, &gxde::lock::LogindSession::LockRequested, this,
+            [this] {
+        qInfo() << "(LockWorker) Lock requested through logind";
+        m_model->setIsShow(true);
+    });
+    connect(m_logind, &gxde::lock::LogindSession::UnlockRequested, this,
+            &LockWorker::onLogindUnlock);
+
+    auto record = [this](bool locked) {
+        gxde::lock::MarkSessionLocked(locked);
+        m_logind->SetLockedHint(locked);
+    };
+    connect(m_model, &SessionBaseModel::visibleChanged, this, record);
+    // Never clear the flag here: a replacement started by gxde-lock-guard
+    // after a crash is about to lock again, and dying before it does must
+    // still count as dying while locked.
+    if (m_model->isShow())
+        record(true);
+    else
+        m_logind->SetLockedHint(false);
+}
+
+void LockWorker::onLogindUnlock() {
+    if (!m_model->isShow())
+        return;
+
+    // logind only accepts Unlock from the session's owner or an
+    // administrator, which is how a user gets back in from a text console
+    // when the lock screen itself is unusable.
+    qInfo() << "(LockWorker) Unlock requested through logind";
+    if (m_authenticating) {
+        m_auth->stop();
+        m_authenticating = false;
+    }
+    m_password.clear();
+    m_fingerprint->Stop();
+    if (m_model->currentUser())
+        m_model->currentUser()->resetLock();
+    // A shutdown or reboot picked on the lock screen still needs the
+    // password; an unlock from logind never runs it.
+    m_model->setPowerAction(SessionBaseModel::RequireNormal);
     emit m_model->authFinished(true);
 }
 

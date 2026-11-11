@@ -270,6 +270,7 @@ int main(int argc, char* argv[]) {
     worker = std::make_unique<DemoLockWorker>(&model);
   } else {
     worker = std::make_unique<LockWorker>(&model);
+    worker->enableSessionIntegration();
   }
   gxde::lock::LockBackend backend(&model, worker.get());
 

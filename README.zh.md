@@ -28,8 +28,9 @@
 
 | 组件 | 安装位置 | 源码 | 用途 |
 | --- | --- | --- | --- |
-| 经典锁屏 | `/usr/bin/gxde-lock-classic` | `src/lock-classic` | DTK 控件锁屏；也是固定的自启动与 D-Bus 入口，选择现代样式时交给现代锁屏。 |
+| 经典锁屏 | `/usr/bin/gxde-lock-classic` | `src/lock-classic` | DTK 控件锁屏；也是守护进程背后固定的入口，选择现代样式时交给现代锁屏。 |
 | 现代锁屏 | `/usr/bin/gxde-lock-neo` | `src/lock-neo` | 基于 `src/lock-common` 的 Qt Quick 锁屏。 |
+| 守护进程 | `<libexec>/gxde-lock-guard` | `src/guard` | 由自启动项和 D-Bus 激活启动。运行经典锁屏，锁屏崩溃时重新拉起；反复崩溃时改用崩溃提示守住锁定。 |
 | 认证辅助程序 | `<libexec>/gxde-lock-auth-helper` | `src/auth-helper` | 以被锁定用户的身份运行 `gxde-lock` PAM 栈，从不打开会话。 |
 | root 辅助程序 | `<libexec>/gxde-lock-system` | `src/system` | 按需激活的系统总线服务，保存所有用户共享的设置并执行电源操作。 |
 
@@ -84,11 +85,21 @@ cd arch && makepkg -si  # Arch Linux
 
 ## 使用方式
 软件包会安装 XDG 自启动项，锁屏服务随会话启动
-（`gxde-lock-classic --daemon --auto-enroll`），并且：
+（`gxde-lock-guard --daemon --auto-enroll`，由它带着这些参数运行
+`gxde-lock-classic`），并且：
 
 * 注册 `org.freedesktop.ScreenSaver` 与 Deepin 的 `com.deepin.dde.lockFront`，
   桌面的“锁定屏幕”操作会调用它；
-* 通过 KGlobalAccel 注册 Super+L（已被其他程序占用时不会抢占）。
+* 通过 KGlobalAccel 注册 Super+L（已被其他程序占用时不会抢占）；
+* 监听 logind 会话的 `Lock`/`Unlock` 信号，`loginctl lock-session` 和
+  `loginctl unlock-session` 都可用，并同步会话的 `LockedHint`。
+
+### 锁屏崩溃时
+锁定期间锁屏程序退出时，`gxde-lock-guard` 会立刻拉起新的锁屏并接管锁定
+（Wayland 下这段时间合成器会保持会话锁定）。一分钟内崩溃三次后，改为显示
+一个简单的提示，做法与 Plasma 相同：切换到文本终端，登录后执行提示中的
+`loginctl unlock-session <id>`（或 `kill -USR1 <pid>`），再切换回来。
+刻意不提供解锁快捷键。
 
 立即锁屏：
 ```bash
