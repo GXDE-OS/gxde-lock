@@ -130,7 +130,7 @@ QString envInfo() {
 
 	for (auto** envp = environ; *envp != nullptr; ++envp) { // NOLINT
 		auto prefixes = std::array<std::string_view, 6> {
-		    "QS_",
+		    "GXDE_LOCK_",
 		    "QT_",
 		    "QML_",
 		    "QML2_",
@@ -155,7 +155,7 @@ QString combinedInfo() {
 	auto stream = QTextStream(&info);
 
 	stream << "===== Version Information =====\n";
-	stream << "Quickshell: " << qsVersion() << '\n';
+	stream << "gxde-lock: " << qsVersion() << '\n';
 	stream << "Qt: " << qtVersion() << '\n';
 
 	stream << "\n===== Build Information =====\n";

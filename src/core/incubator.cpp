@@ -15,7 +15,7 @@
 
 #include "logcat.hpp"
 
-QS_LOGGING_CATEGORY(logIncubator, "quickshell.incubator", QtWarningMsg);
+QS_LOGGING_CATEGORY(logIncubator, "gxde-lock.incubator", QtWarningMsg);
 
 void QsQmlIncubator::statusChanged(QQmlIncubator::Status status) {
 	switch (status) {

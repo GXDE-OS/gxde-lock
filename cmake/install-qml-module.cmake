@@ -1,18 +1,17 @@
-set(INSTALL_QMLDIR "" CACHE STRING "QML install dir")
-set(INSTALL_QML_PREFIX "" CACHE STRING "QML install prefix")
+include(GNUInstallDirs)
 
-# There doesn't seem to be a standard cross-distro qml install path.
-if ("${INSTALL_QMLDIR}" STREQUAL "" AND "${INSTALL_QML_PREFIX}" STREQUAL "")
-	message(WARNING "Neither INSTALL_QMLDIR nor INSTALL_QML_PREFIX is set. QML modules will not be installed.")
+# Installed QML modules are only read by tooling (qmlls); the binary links them statically.
+# They go to a private directory so they never overwrite an upstream Quickshell installation,
+# which uses the same module URIs.
+set(INSTALL_QMLDIR "${CMAKE_INSTALL_LIBDIR}/gxde-lock/qml" CACHE STRING "QML install dir")
+
+if (IS_ABSOLUTE "${INSTALL_QMLDIR}")
+	set(QML_FULL_INSTALLDIR "${INSTALL_QMLDIR}")
 else()
-	if ("${INSTALL_QMLDIR}" STREQUAL "")
-		set(QML_FULL_INSTALLDIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_QML_PREFIX}")
-	else()
-		set(QML_FULL_INSTALLDIR "${INSTALL_QMLDIR}")
-	endif()
-
-	message(STATUS "QML install dir: ${QML_FULL_INSTALLDIR}")
+	set(QML_FULL_INSTALLDIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_QMLDIR}")
 endif()
+
+message(STATUS "QML install dir: ${QML_FULL_INSTALLDIR}")
 
 # Install a given target as a QML module. This is mostly pulled from ECM, as there does not seem
 # to be an official way to do it.

@@ -17,7 +17,7 @@
 
 #include "logcat.hpp"
 
-QS_LOGGING_CATEGORY(logQsIntercept, "quickshell.interceptor", QtWarningMsg);
+QS_LOGGING_CATEGORY(logQsIntercept, "gxde-lock.interceptor", QtWarningMsg);
 
 QUrl QsUrlInterceptor::intercept(
     const QUrl& originalUrl,

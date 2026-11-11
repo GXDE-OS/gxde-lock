@@ -26,7 +26,7 @@ namespace qs::crash {
 
 namespace {
 
-QS_LOGGING_CATEGORY(logCrashHandler, "quickshell.crashhandler", QtWarningMsg);
+QS_LOGGING_CATEGORY(logCrashHandler, "gxde-lock.crashhandler", QtWarningMsg);
 
 void writeEnvInt(char* buf, const char* name, int value) {
 	// NOLINTBEGIN (cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -107,15 +107,15 @@ void signalHandler(
 
 	// dup to remove CLOEXEC
 	auto infoFdStr = std::array<char, 48>();
-	writeEnvInt(infoFdStr.data(), "__QUICKSHELL_CRASH_INFO_FD", dup(CrashInfo::INSTANCE.infoFd));
+	writeEnvInt(infoFdStr.data(), "__GXDE_LOCK_CRASH_INFO_FD", dup(CrashInfo::INSTANCE.infoFd));
 	env[envi++] = infoFdStr.data();
 
 	auto corePidStr = std::array<char, 48>();
-	writeEnvInt(corePidStr.data(), "__QUICKSHELL_CRASH_DUMP_PID", coredumpPid);
+	writeEnvInt(corePidStr.data(), "__GXDE_LOCK_CRASH_DUMP_PID", coredumpPid);
 	env[envi++] = corePidStr.data();
 
 	auto sigStr = std::array<char, 48>();
-	writeEnvInt(sigStr.data(), "__QUICKSHELL_CRASH_SIGNAL", sig);
+	writeEnvInt(sigStr.data(), "__GXDE_LOCK_CRASH_SIGNAL", sig);
 	env[envi++] = sigStr.data();
 
 	auto populateEnv = [&]() {
@@ -138,8 +138,8 @@ void signalHandler(
 		// dup to remove CLOEXEC
 		auto dumpFdStr = std::array<char, 48>();
 		auto logFdStr = std::array<char, 48>();
-		writeEnvInt(dumpFdStr.data(), "__QUICKSHELL_CRASH_DUMP_FD", dup(CrashInfo::INSTANCE.traceFd));
-		writeEnvInt(logFdStr.data(), "__QUICKSHELL_CRASH_LOG_FD", dup(CrashInfo::INSTANCE.logFd));
+		writeEnvInt(dumpFdStr.data(), "__GXDE_LOCK_CRASH_DUMP_FD", dup(CrashInfo::INSTANCE.traceFd));
+		writeEnvInt(logFdStr.data(), "__GXDE_LOCK_CRASH_LOG_FD", dup(CrashInfo::INSTANCE.logFd));
 
 		env[envi++] = dumpFdStr.data();
 		env[envi++] = logFdStr.data();
@@ -153,7 +153,7 @@ void signalHandler(
 		populateEnv();
 		execve(exe.data(), arg.data(), env.data());
 
-		perror("Failed to relaunch quickshell.\n");
+		perror("Failed to relaunch gxde-lock.\n");
 		_exit(-1);
 	}
 }
@@ -178,7 +178,7 @@ void handleCppTerminate() {
 void CrashHandler::init() {
 	qCDebug(logCrashHandler) << "Starting crash handler...";
 
-	CrashInfo::INSTANCE.traceFd = memfd_create("quickshell:trace", MFD_CLOEXEC);
+	CrashInfo::INSTANCE.traceFd = memfd_create("gxde-lock:trace", MFD_CLOEXEC);
 
 	if (CrashInfo::INSTANCE.traceFd == -1) {
 		qCCritical(logCrashHandler) << "Failed to allocate trace memfd, stack traces will not be "
@@ -227,7 +227,7 @@ void CrashHandler::init() {
 }
 
 void CrashHandler::setRelaunchInfo(const RelaunchInfo& info) {
-	CrashInfo::INSTANCE.infoFd = memfd_create("quickshell:instance_info", MFD_CLOEXEC);
+	CrashInfo::INSTANCE.infoFd = memfd_create("gxde-lock:instance_info", MFD_CLOEXEC);
 
 	if (CrashInfo::INSTANCE.infoFd == -1) {
 		qCCritical(

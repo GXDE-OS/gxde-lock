@@ -17,7 +17,7 @@
 
 namespace qs::ipc {
 
-QS_LOGGING_CATEGORY(logIpc, "quickshell.ipc", QtWarningMsg);
+QS_LOGGING_CATEGORY(logIpc, "gxde-lock.ipc", QtWarningMsg);
 
 IpcServer::IpcServer(const QString& path) {
 	QObject::connect(&this->server, &QLocalServer::newConnection, this, &IpcServer::onNewConnection);

@@ -43,7 +43,7 @@ void PopupAnchor::setWindowInternal(QObject* window) {
 			this->bProxyWindow = proxy;
 		} else {
 			qWarning() << "Tried to set popup anchor window to" << window
-			           << "which is not a quickshell window.";
+			           << "which is not a gxde-lock window.";
 			goto setnull;
 		}
 

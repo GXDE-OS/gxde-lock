@@ -14,7 +14,7 @@
 #include "../core/logcat.hpp"
 #include "datastream.hpp"
 
-QS_LOGGING_CATEGORY(logSocket, "quickshell.io.socket", QtWarningMsg);
+QS_LOGGING_CATEGORY(logSocket, "gxde-lock.io.socket", QtWarningMsg);
 
 void Socket::setSocket(QLocalSocket* socket) {
 	if (this->socket != nullptr) {

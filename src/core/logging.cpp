@@ -43,12 +43,12 @@
 #include "paths.hpp"
 #include "ringbuf.hpp"
 
-QS_LOGGING_CATEGORY(logBare, "quickshell.bare");
+QS_LOGGING_CATEGORY(logBare, "gxde-lock.bare");
 
 namespace qs::log {
 using namespace qt_logging_registry;
 
-QS_LOGGING_CATEGORY(logLogging, "quickshell.logging", QtWarningMsg);
+QS_LOGGING_CATEGORY(logLogging, "gxde-lock.logging", QtWarningMsg);
 
 namespace {
 bool copyFileData(int sourceFd, int destFd, qint64 size) {
@@ -129,7 +129,7 @@ void LogMessage::formatMessage(
 		stream << msg.time.toString("yyyy-MM-dd hh:mm:ss.zzz");
 	}
 
-	if (msg.category == "quickshell.bare") {
+	if (msg.category == "gxde-lock.bare") {
 		if (!prefix.isEmpty()) stream << ' ';
 		stream << msg.body;
 	} else {
@@ -240,7 +240,7 @@ void LogManager::filterCategory(QLoggingCategory* category) {
 	auto* instance = LogManager::instance();
 
 	auto categoryName = QLatin1StringView(category->categoryName());
-	auto isQs = categoryName.startsWith(QLatin1StringView("quickshell."));
+	auto isQs = categoryName.startsWith(QLatin1StringView("gxde-lock."));
 
 	CategoryFilter filter;
 
@@ -268,7 +268,7 @@ void LogManager::filterCategory(QLoggingCategory* category) {
 		// for internal Quickshell types, and may still be desired for shells that want to maintain
 		// compatibility with Qt versions prior to 6.11.
 		if (categoryName == QLatin1StringView("qt.qml.propertyCache.append")
-		    && !qEnvironmentVariableIsSet("QS_NO_FILTER_QT_LOGS"))
+		    && !qEnvironmentVariableIsSet("GXDE_LOCK_NO_FILTER_QT_LOGS"))
 		{
 			filter.warn = false;
 		}
@@ -375,14 +375,14 @@ CategoryFilter LogManager::getFilter(QLatin1StringView category) {
 }
 
 void ThreadLogging::init() {
-	auto logMfd = memfd_create("quickshell:logs", 0);
+	auto logMfd = memfd_create("gxde-lock:logs", 0);
 
 	if (logMfd == -1) {
 		qCCritical(logLogging) << "Failed to create memfd for initial log storage"
 		                       << qt_error_string(-1);
 	}
 
-	auto dlogMfd = memfd_create("quickshell:detailedlogs", 0);
+	auto dlogMfd = memfd_create("gxde-lock:detailedlogs", 0);
 
 	if (dlogMfd == -1) {
 		qCCritical(logLogging) << "Failed to create memfd for initial detailed log storage"
@@ -912,8 +912,8 @@ bool LogReader::initialize() {
 
 	if (!readable) {
 		qCritical() << "This log was encoded with version" << logVersion
-		            << "of the quickshell log encoder, which cannot be decoded by the current "
-		               "version of quickshell, with log version"
+		            << "of the gxde-lock log encoder, which cannot be decoded by the current "
+		               "version of gxde-lock, with log version"
 		            << readerVersion;
 		return false;
 	}

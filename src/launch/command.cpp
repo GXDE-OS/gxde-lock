@@ -20,7 +20,6 @@
 #include <qlogging.h>
 #include <qloggingcategory.h>
 #include <qnamespace.h>
-#include <qstandardpaths.h>
 #include <qtenvironmentvariables.h>
 #include <qtversion.h>
 #include <unistd.h>
@@ -31,6 +30,7 @@
 #include "../core/paths.hpp"
 #include "../io/ipccomm.hpp"
 #include "../ipc/ipc.hpp"
+#include "build.hpp"
 #include "launch_p.hpp"
 
 namespace qs::launch {
@@ -39,122 +39,15 @@ using qs::ipc::IpcClient;
 
 namespace {
 
-QList<QString> configBaseDirs() {
-	auto configHome = qEnvironmentVariable("XDG_CONFIG_HOME");
-	if (configHome.isEmpty()) {
-		auto home = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation));
-		configHome = QDir(home).filePath(".config");
-	}
-
-	auto configDirs = qEnvironmentVariable("XDG_CONFIG_DIRS").split(':', Qt::SkipEmptyParts);
-	if (configDirs.isEmpty()) {
-		configDirs.append("/etc/xdg");
-	}
-
-	configDirs.prepend(configHome);
-
-	for (auto& dir: configDirs) {
-		dir.append("/quickshell");
-	}
-
-	return configDirs;
-}
-
-QString locateNamedConfig(const QString& name) {
-	for (const auto& baseDir: configBaseDirs()) {
-		auto shellPath = QDir(baseDir).filePath("shell.qml");
-		auto hasShell = QFileInfo(shellPath).isFile();
-
-		if (hasShell) {
-			if (name == "default") return shellPath;
-			else continue; // skip subfolders if shell.qml is present in folder
-		}
-
-		shellPath = QDir(QDir(baseDir).filePath(name)).filePath("shell.qml");
-		if (QFileInfo(shellPath).isFile()) return shellPath;
-	}
-
-	return QString();
-}
-
-int locateConfigFile(CommandState& cmd, QString& path) {
-	if (!cmd.config.path->isEmpty()) {
-		path = *cmd.config.path;
-	} else {
-		auto manifestPath = *cmd.config.manifest;
-		if (manifestPath.isEmpty()) {
-			auto configDir = QDir(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation));
-			auto path = configDir.filePath("manifest.conf");
-			if (QFileInfo(path).isFile()) manifestPath = path;
-		}
-
-		if (!manifestPath.isEmpty()) {
-			qWarning()
-			    << "Config manifests (manifest.conf) are deprecated and will be removed in a future "
-			       "release.";
-			qWarning() << "Consider using symlinks to a subfolder of quickshell's XDG config dirs.";
-
-			auto file = QFile(manifestPath);
-			if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-				auto stream = QTextStream(&file);
-				while (!stream.atEnd()) {
-					auto line = stream.readLine();
-					if (line.trimmed().startsWith("#")) continue;
-					if (line.trimmed().isEmpty()) continue;
-
-					auto split = line.split('=');
-					if (split.length() != 2) {
-						qCritical() << "Manifest line not in expected format 'name = relativepath':" << line;
-						return -1;
-					}
-
-					if (split[0].trimmed() == *cmd.config.name) {
-						path = QDir(QFileInfo(file).absolutePath()).filePath(split[1].trimmed());
-						break;
-					}
-				}
-
-				if (path.isEmpty()) {
-					qCCritical(logBare) << "Configuration" << *cmd.config.name
-					                    << "not found when searching manifest" << manifestPath;
-					return -1;
-				}
-			} else {
-				qCCritical(logBare) << "Could not open manifest at path" << *cmd.config.manifest;
-				return -1;
-			}
-		} else {
-			const auto& name = cmd.config.name->isEmpty() ? "default" : *cmd.config.name;
-			path = locateNamedConfig(name);
-
-			if (path.isEmpty()) {
-				if (name == "default") {
-					qCCritical(
-					    logBare
-					) << "Could not find \"default\" config directory or shell.qml in any valid config path.";
-				} else {
-					qCCritical(logBare) << "Could not find" << name
-					                    << "config directory in any valid config path.";
-				}
-
-				return -1;
-			}
-
-			goto rpath;
-		}
-	}
-
-	if (QFileInfo(path).isDir()) {
-		path = QDir(path).filePath("shell.qml");
-	}
+// The lock screen ships with gxde-lock. External configs are never loaded.
+int locateConfigFile(QString& path) {
+	path = QStringLiteral(GXDE_LOCK_QML_ENTRY);
 
 	if (!QFileInfo(path).isFile()) {
-		qCCritical(logBare) << "Could not open config file at" << path;
+		qCCritical(logBare) << "Could not find the lock screen QML at" << path;
 		return -1;
 	}
 
-rpath:
-	path = QFileInfo(path).absoluteFilePath();
 	return 0;
 }
 
@@ -185,7 +78,7 @@ int selectInstance(
 	} else if (!cmd.instance.id->isEmpty()) {
 		path = basePath->filePath("by-pid");
 		auto [liveInstances, mismatchedInstances, deadInstances] =
-		    QsPaths::collectInstances(path, cmd.config.anyDisplay ? "" : getDisplayConnection());
+		    QsPaths::collectInstances(path, cmd.filter.anyDisplay ? "" : getDisplayConnection());
 
 		liveInstances.removeIf([&](const InstanceLockInfo& info) {
 			return !info.instance.instanceId.startsWith(*cmd.instance.id);
@@ -247,7 +140,7 @@ int selectInstance(
 		}
 	} else {
 		QString configFilePath;
-		auto r = locateConfigFile(cmd, configFilePath);
+		auto r = locateConfigFile(configFilePath);
 		if (r != 0) return r;
 
 		auto pathId =
@@ -256,7 +149,7 @@ int selectInstance(
 		path = QDir(basePath->filePath("by-path")).filePath(pathId);
 
 		auto [liveInstances, mismatchedInstances, deadInstances] =
-		    QsPaths::collectInstances(path, cmd.config.anyDisplay ? "" : getDisplayConnection());
+		    QsPaths::collectInstances(path, cmd.filter.anyDisplay ? "" : getDisplayConnection());
 
 		auto instances = liveInstances;
 		if (instances.isEmpty() && deadFallback) {
@@ -265,7 +158,7 @@ int selectInstance(
 
 		sortInstances(
 		    instances,
-		    cmd.config.newest || (!instances.empty() && instances.first().pid == -1)
+		    cmd.filter.newest || (!instances.empty() && instances.first().pid == -1)
 		);
 
 		if (instances.isEmpty()) {
@@ -273,7 +166,7 @@ int selectInstance(
 				if (liveInstances.isEmpty() && deadInstances.length() > 1) {
 					qCInfo(logBare) << "No running instances for" << configFilePath;
 					qCInfo(logBare) << "Dead instances:";
-					sortInstances(deadInstances, cmd.config.newest);
+					sortInstances(deadInstances, cmd.filter.newest);
 					for (auto& instance: deadInstances) {
 						qCInfo(logBare).noquote() << " -" << instance.instance.instanceId;
 					}
@@ -339,7 +232,7 @@ int listInstances(CommandState& cmd) {
 	if (cmd.instance.all) {
 		path = basePath->filePath("by-pid");
 	} else {
-		auto r = locateConfigFile(cmd, configFilePath);
+		auto r = locateConfigFile(configFilePath);
 
 		if (r != 0) {
 			qCInfo(logBare) << "Use --all to list all instances.";
@@ -354,14 +247,14 @@ int listInstances(CommandState& cmd) {
 
 	auto [liveInstances, mismatchedInstances, deadInstances] = QsPaths::collectInstances(
 	    path,
-	    cmd.config.anyDisplay || cmd.instance.all ? "" : getDisplayConnection()
+	    cmd.filter.anyDisplay || cmd.instance.all ? "" : getDisplayConnection()
 	);
 
-	sortInstances(liveInstances, cmd.config.newest);
+	sortInstances(liveInstances, cmd.filter.newest);
 
 	QList<InstanceLockInfo> instances;
 	if (cmd.instance.includeDead) {
-		sortInstances(deadInstances, cmd.config.newest);
+		sortInstances(deadInstances, cmd.filter.newest);
 		instances = std::move(deadInstances);
 		instances.append(liveInstances);
 	} else {
@@ -469,13 +362,13 @@ int ipcCommand(CommandState& cmd) {
 int launchFromCommand(CommandState& cmd) {
 	QString configPath;
 
-	auto r = locateConfigFile(cmd, configPath);
+	auto r = locateConfigFile(configPath);
 	if (r != 0) return r;
 
 	{
 		InstanceLockInfo info;
 		if (cmd.misc.noDuplicate && selectInstance(cmd, &info, false, false) == 0) {
-			qCInfo(logBare) << "An instance of this configuration is already running.";
+			qCInfo(logBare) << "An instance of gxde-lock is already running.";
 			return 0;
 		}
 	}
@@ -498,10 +391,10 @@ int runCommand(int argc, char** argv) {
 
 	if (state.misc.checkCompat) {
 		if (strcmp(qVersion(), QT_VERSION_STR) != 0) {
-			QTextStream(stdout) << "\033[31mCOMPATIBILITY WARNING: Quickshell was built against Qt "
+			QTextStream(stdout) << "\033[31mCOMPATIBILITY WARNING: gxde-lock was built against Qt "
 			                    << QT_VERSION_STR << " but the system has updated to Qt " << qVersion()
 			                    << " without rebuilding the package. This is likely to cause crashes, so "
-			                       "you must rebuild the quickshell package.\n\033[0m";
+			                       "you must rebuild the gxde-lock package.\n\033[0m";
 			return 1;
 		}
 
@@ -559,7 +452,7 @@ int runCommand(int argc, char** argv) {
 
 	if (state.misc.printVersion) {
 		if (state.log.verbosity == 0) {
-			qCInfo(logBare).noquote() << "Quickshell" << qs::debuginfo::qsVersion();
+			qCInfo(logBare).noquote() << "gxde-lock" << qs::debuginfo::qsVersion();
 		} else {
 			qCInfo(logBare).noquote() << qs::debuginfo::combinedInfo();
 		}
@@ -575,10 +468,10 @@ int runCommand(int argc, char** argv) {
 		continuation = ipcCommand;
 	} else {
 		if (strcmp(qVersion(), QT_VERSION_STR) != 0) {
-			qWarning() << "\033[31mQuickshell was built against Qt" << QT_VERSION_STR
+			qWarning() << "\033[31mgxde-lock was built against Qt" << QT_VERSION_STR
 			           << "but the system has updated to Qt" << qVersion()
 			           << "without rebuilding the package. This is likely to cause crashes, so "
-			              "the quickshell package must be rebuilt.\n";
+			              "the gxde-lock package must be rebuilt.\n";
 		}
 
 		return launchFromCommand(state);

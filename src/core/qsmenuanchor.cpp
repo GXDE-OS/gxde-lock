@@ -18,10 +18,10 @@ QsMenuAnchor::~QsMenuAnchor() { this->onClosed(); }
 
 void QsMenuAnchor::open() {
 	if (qobject_cast<QApplication*>(QCoreApplication::instance()) == nullptr) {
-		qCritical() << "Cannot call QsMenuAnchor.open() as quickshell was not started in "
+		qCritical() << "Cannot call QsMenuAnchor.open() as gxde-lock was not started in "
 		               "QApplication mode.";
 		qCritical() << "To use platform menus, add `//@ pragma UseQApplication` to the top of your "
-		               "root QML file and restart quickshell.";
+		               "root QML file and restart gxde-lock.";
 		return;
 	}
 

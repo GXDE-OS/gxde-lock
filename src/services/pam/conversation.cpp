@@ -15,7 +15,7 @@
 #include "../../core/logcat.hpp"
 #include "ipc.hpp"
 
-QS_LOGGING_CATEGORY(logPam, "quickshell.service.pam", QtWarningMsg);
+QS_LOGGING_CATEGORY(logPam, "gxde-lock.service.pam", QtWarningMsg);
 
 QString PamError::toString(PamError::Enum value) {
 	switch (value) {

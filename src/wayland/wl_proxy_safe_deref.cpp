@@ -7,7 +7,7 @@
 #include "../core/logcat.hpp"
 
 namespace {
-QS_LOGGING_CATEGORY(logDeref, "quickshell.wayland.safederef", QtWarningMsg);
+QS_LOGGING_CATEGORY(logDeref, "gxde-lock.wayland.safederef", QtWarningMsg);
 using wl_proxy_get_listener_t = const void* (*) (wl_proxy*);
 wl_proxy_get_listener_t original_wl_proxy_get_listener = nullptr; // NOLINT
 } // namespace

@@ -12,6 +12,7 @@
 #include <qqmlengine.h>
 #include <qtenvironmentvariables.h>
 
+#include "build.hpp"
 #include "logcat.hpp"
 #include "paths.hpp"
 #include "scan.hpp"
@@ -19,7 +20,7 @@
 namespace qs::core {
 
 namespace {
-QS_LOGGING_CATEGORY(logTooling, "quickshell.tooling", QtWarningMsg);
+QS_LOGGING_CATEGORY(logTooling, "gxde-lock.tooling", QtWarningMsg);
 }
 
 bool QmlToolingSupport::updateTooling(const QDir& configRoot, QmlScanner& scanner) {
@@ -82,6 +83,8 @@ QString QmlToolingSupport::getQmllsConfig() {
 		// specific patches, e.g. nixos.
 		auto importPaths = QQmlEngine().importPathList();
 		importPaths.removeIf([](const QString& path) { return path.startsWith("qrc:"); });
+		// Resolve our own modules before any upstream Quickshell install with the same URIs.
+		importPaths.prepend(QStringLiteral(QML_INSTALL_DIR));
 
 		auto vfsPath = QsPaths::instance()->shellVfsDir()->path();
 		auto importPathsStr = importPaths.join(u':');

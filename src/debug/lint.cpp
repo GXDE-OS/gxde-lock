@@ -16,7 +16,7 @@
 namespace qs::debug {
 
 namespace {
-QS_LOGGING_CATEGORY(logLint, "quickshell.linter", QtWarningMsg);
+QS_LOGGING_CATEGORY(logLint, "gxde-lock.linter", QtWarningMsg);
 
 void lintZeroSized(QQuickItem* item);
 bool isRenderable(QQuickItem* item);

@@ -23,7 +23,7 @@
 #include "logcat.hpp"
 
 namespace {
-QS_LOGGING_CATEGORY(logColorQuantizer, "quickshell.colorquantizer", QtWarningMsg);
+QS_LOGGING_CATEGORY(logColorQuantizer, "gxde-lock.colorquantizer", QtWarningMsg);
 }
 
 ColorQuantizerOperation::ColorQuantizerOperation(

@@ -20,7 +20,7 @@
 #include "logcat.hpp"
 #include "scanenv.hpp"
 
-QS_LOGGING_CATEGORY(logQmlScanner, "quickshell.qmlscanner", QtWarningMsg);
+QS_LOGGING_CATEGORY(logQmlScanner, "gxde-lock.qmlscanner", QtWarningMsg);
 
 bool QmlScanner::readAndHashFile(const QString& path, QByteArray& data) {
 	auto file = QFile(path);

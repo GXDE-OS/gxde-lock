@@ -26,8 +26,8 @@ namespace {
 
 void checkCrashRelaunch(char** argv) {
 #if CRASH_HANDLER
-	auto lastInfoFdStr = qEnvironmentVariable("__QUICKSHELL_CRASH_INFO_FD");
-	auto dumpPid = qEnvironmentVariable("__QUICKSHELL_CRASH_DUMP_PID").toInt();
+	auto lastInfoFdStr = qEnvironmentVariable("__GXDE_LOCK_CRASH_INFO_FD");
+	auto dumpPid = qEnvironmentVariable("__GXDE_LOCK_CRASH_DUMP_PID").toInt();
 
 	if (!lastInfoFdStr.isEmpty()) {
 		auto lastInfoFd = lastInfoFdStr.toInt();
@@ -46,9 +46,9 @@ void checkCrashRelaunch(char** argv) {
 			ds >> info;
 		}
 
-		qunsetenv("__QUICKSHELL_CRASH_INFO_FD");
-		qunsetenv("__QUICKSHELL_CRASH_DUMP_PID");
-		qunsetenv("__QUICKSHELL_CRASH_SIGNAL");
+		qunsetenv("__GXDE_LOCK_CRASH_INFO_FD");
+		qunsetenv("__GXDE_LOCK_CRASH_DUMP_PID");
+		qunsetenv("__GXDE_LOCK_CRASH_SIGNAL");
 
 		LogManager::init(
 		    !info.noColor,
@@ -58,18 +58,18 @@ void checkCrashRelaunch(char** argv) {
 		    info.logRules
 		);
 
-		qCritical().nospace() << "Quickshell has crashed under pid " << dumpPid
+		qCritical().nospace() << "gxde-lock has crashed under pid " << dumpPid
 		                      << " (Coredumps will be available under that pid.)";
 
 		qCritical() << "Further crash information is stored under"
 		            << QsPaths::crashDir(info.instance.instanceId).path();
 
 		if (info.instance.launchTime.msecsTo(QDateTime::currentDateTime()) < 10000) {
-			qCritical() << "Quickshell crashed within 10 seconds of launching. Not restarting to avoid "
+			qCritical() << "gxde-lock crashed within 10 seconds of launching. Not restarting to avoid "
 			               "a crash loop.";
 			exit(-1); // NOLINT
 		} else {
-			qCritical() << "Quickshell has been restarted.";
+			qCritical() << "gxde-lock has been restarted.";
 
 			launch({.configPath = info.instance.configPath}, argv);
 		}
@@ -117,7 +117,7 @@ void exitDaemon(int code) {
 }
 
 int main(int argc, char** argv) {
-	QCoreApplication::setApplicationName("quickshell");
+	QCoreApplication::setApplicationName("gxde-lock");
 
 #if CRASH_HANDLER
 	qsCheckCrash(argc, argv);

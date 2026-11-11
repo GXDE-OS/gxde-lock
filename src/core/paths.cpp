@@ -19,7 +19,7 @@
 #include "logcat.hpp"
 
 namespace {
-QS_LOGGING_CATEGORY(logPaths, "quickshell.paths", QtWarningMsg);
+QS_LOGGING_CATEGORY(logPaths, "gxde-lock.paths", QtWarningMsg);
 }
 
 QsPaths* QsPaths::instance() {
@@ -69,7 +69,7 @@ QDir* QsPaths::baseRunDir() {
 		}
 
 		this->mBaseRunDir = QDir(runtimeDir);
-		this->mBaseRunDir = QDir(this->mBaseRunDir.filePath("quickshell"));
+		this->mBaseRunDir = QDir(this->mBaseRunDir.filePath("gxde-lock"));
 		qCDebug(logPaths) << "Initialized base runtime path:" << this->mBaseRunDir.path();
 
 		if (!this->mBaseRunDir.mkpath(".")) {
@@ -289,7 +289,7 @@ QDir QsPaths::shellStateDir() {
 		}
 
 		if (this->shellStateOverride.isEmpty()) {
-			dir = QDir(dir.filePath("quickshell/by-shell"));
+			dir = QDir(dir.filePath("gxde-lock/by-shell"));
 			dir = QDir(dir.filePath(this->shellId));
 		} else {
 			dir = QDir(this->shellStateOverride.replace("$BASE", dir.path()));

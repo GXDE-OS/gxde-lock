@@ -46,12 +46,9 @@ struct CommandState {
 	} log;
 
 	struct {
-		QStringOption path;
-		QStringOption manifest;
-		QStringOption name;
 		bool newest = false;
 		bool anyDisplay = false;
-	} config;
+	} filter;
 
 	struct {
 		int port = -1;

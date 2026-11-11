@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(quickshell VERSION "0.3.2" LANGUAGES CXX C)
+project(gxde-lock VERSION "0.3.2" LANGUAGES CXX C)
 
 set(UNRELEASED_FEATURES)
 
@@ -9,8 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(QS_BUILD_OPTIONS "")
 
-# should be changed for forks
-set(CRASHREPORT_URL "https://github.com/outfoxxed/quickshell/issues/new?template=crash2.yml" CACHE STRING "Bugreport URL")
+set(CRASHREPORT_URL "" CACHE STRING "Bugreport URL")
 
 function(boption VAR NAME DEFAULT)
 	cmake_parse_arguments(PARSE_ARGV 3 arg "" "REQUIRES" "")
@@ -41,10 +40,11 @@ endfunction()
 set(DISTRIBUTOR "Unset" CACHE STRING "Distributor")
 string(APPEND QS_BUILD_OPTIONS "  Distributor: ${DISTRIBUTOR}")
 
-message(STATUS "Quickshell configuration")
+message(STATUS "gxde-lock configuration")
 message(STATUS "  Distributor: ${DISTRIBUTOR}")
 boption(NO_PCH "Disable precompild headers (dev)" OFF)
 boption(BUILD_TESTING "Build tests (dev)" OFF)
+boption(DEV_QML "Load lock screen QML from the source tree (dev)" OFF)
 boption(ASAN "ASAN (dev)" OFF) # note: better output with gcc than clang
 boption(FRAME_POINTERS "Keep Frame Pointers (dev)" ${ASAN})
 
@@ -121,16 +121,11 @@ set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml_modules)
 
 add_subdirectory(src)
 
+install(DIRECTORY qml/ DESTINATION ${CMAKE_INSTALL_DATADIR}/gxde-lock/qml)
+
 if (USE_JEMALLOC)
 	find_package(PkgConfig REQUIRED)
 	# IMPORTED_TARGET not working for some reason
 	pkg_check_modules(JEMALLOC REQUIRED jemalloc)
 	target_link_libraries(quickshell PRIVATE ${JEMALLOC_LIBRARIES})
 endif()
-
-install(CODE "
-	execute_process(
-		COMMAND ${CMAKE_COMMAND} -E create_symlink \
-		${CMAKE_INSTALL_FULL_BINDIR}/quickshell \$ENV{DESTDIR}${CMAKE_INSTALL_FULL_BINDIR}/qs
-	)
-")

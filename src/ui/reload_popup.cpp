@@ -47,7 +47,7 @@ void ReloadPopup::closed() {
 }
 
 void ReloadPopup::spawnPopup(QString instanceId, bool failed, QString errorString) {
-	if (qEnvironmentVariableIsSet("QS_NO_RELOAD_POPUP")) return;
+	if (qEnvironmentVariableIsSet("GXDE_LOCK_NO_RELOAD_POPUP")) return;
 
 	if (ReloadPopup::activePopup) ReloadPopup::activePopup->closed();
 	ReloadPopup::activePopup = new ReloadPopup(std::move(instanceId), failed, std::move(errorString));

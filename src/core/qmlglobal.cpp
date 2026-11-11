@@ -64,7 +64,7 @@ void QuickshellSettings::setWorkingDirectory(QString workingDirectory) { // NOLI
 }
 
 bool QuickshellSettings::watchFiles() const {
-	return this->mWatchFiles && qEnvironmentVariableIsEmpty("QS_DISABLE_FILE_WATCHER");
+	return this->mWatchFiles && qEnvironmentVariableIsEmpty("GXDE_LOCK_DISABLE_FILE_WATCHER");
 }
 
 void QuickshellSettings::setWatchFiles(bool watchFiles) {

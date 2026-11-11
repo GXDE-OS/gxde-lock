@@ -31,7 +31,7 @@
 
 namespace {
 
-QS_LOGGING_CATEGORY(logCrashReporter, "quickshell.crashreporter", QtWarningMsg);
+QS_LOGGING_CATEGORY(logCrashReporter, "gxde-lock.crashreporter", QtWarningMsg);
 
 int tryDup(int fd, const QString& path) {
 	QFile sourceFile;
@@ -146,10 +146,10 @@ void recordCrashInfo(const QDir& crashDir, const InstanceInfo& instance) {
 		return;
 	}
 
-	auto crashProc = qEnvironmentVariable("__QUICKSHELL_CRASH_DUMP_PID").toInt();
-	auto crashSignal = qEnvironmentVariable("__QUICKSHELL_CRASH_SIGNAL").toInt();
-	auto dumpFd = qEnvironmentVariable("__QUICKSHELL_CRASH_DUMP_FD").toInt();
-	auto logFd = qEnvironmentVariable("__QUICKSHELL_CRASH_LOG_FD").toInt();
+	auto crashProc = qEnvironmentVariable("__GXDE_LOCK_CRASH_DUMP_PID").toInt();
+	auto crashSignal = qEnvironmentVariable("__GXDE_LOCK_CRASH_SIGNAL").toInt();
+	auto dumpFd = qEnvironmentVariable("__GXDE_LOCK_CRASH_DUMP_FD").toInt();
+	auto logFd = qEnvironmentVariable("__GXDE_LOCK_CRASH_LOG_FD").toInt();
 
 	qCDebug(logCrashReporter) << "Resolving stacktrace from fd" << dumpFd;
 	auto stacktrace = resolveStacktrace(dumpFd);
@@ -201,15 +201,15 @@ void recordCrashInfo(const QDir& crashDir, const InstanceInfo& instance) {
 } // namespace
 
 void qsCheckCrash(int argc, char** argv) {
-	auto fd = qEnvironmentVariable("__QUICKSHELL_CRASH_DUMP_FD");
+	auto fd = qEnvironmentVariable("__GXDE_LOCK_CRASH_DUMP_FD");
 	if (fd.isEmpty()) return;
 
 	RelaunchInfo info;
 
-	auto crashProc = qEnvironmentVariable("__QUICKSHELL_CRASH_DUMP_PID").toInt();
+	auto crashProc = qEnvironmentVariable("__GXDE_LOCK_CRASH_DUMP_PID").toInt();
 
 	{
-		auto infoFd = qEnvironmentVariable("__QUICKSHELL_CRASH_INFO_FD").toInt();
+		auto infoFd = qEnvironmentVariable("__GXDE_LOCK_CRASH_INFO_FD").toInt();
 
 		QFile file;
 		if (!file.open(infoFd, QFile::ReadOnly, QFile::AutoCloseHandle)) {
@@ -232,7 +232,7 @@ void qsCheckCrash(int argc, char** argv) {
 
 	auto app = QApplication(argc, argv);
 	auto desktopId =
-	    info.instance.appId.isEmpty() ? QStringLiteral("org.quickshell") : info.instance.appId;
+	    info.instance.appId.isEmpty() ? QStringLiteral("gxde-lock") : info.instance.appId;
 	QApplication::setDesktopFileName(desktopId);
 
 	auto crashDir = QsPaths::crashDir(info.instance.instanceId);

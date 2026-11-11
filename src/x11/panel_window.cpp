@@ -327,7 +327,7 @@ void XPanelWindow::updatePanelStack() {
 // Disable xinerama structs to break multi monitor configurations with bad WMs less.
 // Usually this results in one monitor at the top left corner of the root window working
 // perfectly and all others being broken semi randomly.
-static bool XINERAMA_STRUTS = qEnvironmentVariableIsEmpty("QS_NO_XINERAMA_STRUTS"); // NOLINT
+static bool XINERAMA_STRUTS = qEnvironmentVariableIsEmpty("GXDE_LOCK_NO_XINERAMA_STRUTS"); // NOLINT
 
 void XPanelWindow::updateStrut(bool propagate) {
 	if (this->window == nullptr || this->window->handle() == nullptr) return;

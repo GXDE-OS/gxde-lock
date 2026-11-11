@@ -137,7 +137,7 @@ PanelWindow {
 				PopupText {
 					font.pixelSize: 20
 					fontSizeMode: Text.VerticalFit
-					text: `Quickshell: ${root.failed ? "Config reload failed" : "Config reloaded"}`
+					text: `gxde-lock: ${root.failed ? "Config reload failed" : "Config reloaded"}`
 				}
 
 				Item { Layout.fillWidth: true }
@@ -228,7 +228,7 @@ PanelWindow {
 						RowLayout {
 							PopupText {
 								id: logText
-								text: `qs log -i ${root.instanceId}`
+								text: `gxde-lock log -i ${root.instanceId}`
 							}
 
 							IconImage {

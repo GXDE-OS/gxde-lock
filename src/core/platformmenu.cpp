@@ -79,10 +79,10 @@ bool PlatformMenuEntry::display(QObject* parentWindow, int relativeX, int relati
 	QWindow* window = nullptr;
 
 	if (qobject_cast<QApplication*>(QCoreApplication::instance()) == nullptr) {
-		qCritical() << "Cannot display PlatformMenuEntry as quickshell was not started in "
+		qCritical() << "Cannot display PlatformMenuEntry as gxde-lock was not started in "
 		               "QApplication mode.";
 		qCritical() << "To use platform menus, add `//@ pragma UseQApplication` to the top of your "
-		               "root QML file and restart quickshell.";
+		               "root QML file and restart gxde-lock.";
 		return false;
 	} else if (this->qmenu == nullptr) {
 		qCritical() << "Cannot display PlatformMenuEntry as it is not a menu.";
@@ -122,10 +122,10 @@ bool PlatformMenuEntry::display(QObject* parentWindow, int relativeX, int relati
 
 bool PlatformMenuEntry::display(PopupAnchor* anchor) {
 	if (qobject_cast<QApplication*>(QCoreApplication::instance()) == nullptr) {
-		qCritical() << "Cannot display PlatformMenuEntry as quickshell was not started in "
+		qCritical() << "Cannot display PlatformMenuEntry as gxde-lock was not started in "
 		               "QApplication mode.";
 		qCritical() << "To use platform menus, add `//@ pragma UseQApplication` to the top of your "
-		               "root QML file and restart quickshell.";
+		               "root QML file and restart gxde-lock.";
 		return false;
 	} else if (!anchor->backingWindow() || !anchor->backingWindow()->isVisible()) {
 		qCritical() << "Cannot display PlatformMenuEntry on anchor without visible window.";

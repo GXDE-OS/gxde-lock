@@ -27,7 +27,7 @@
 #include "qmlglobal.hpp"
 
 namespace {
-QS_LOGGING_CATEGORY(logDesktopEntry, "quickshell.desktopentry", QtWarningMsg);
+QS_LOGGING_CATEGORY(logDesktopEntry, "gxde-lock.desktopentry", QtWarningMsg);
 }
 
 struct Locale {

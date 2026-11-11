@@ -17,51 +17,17 @@ int parseCommand(int argc, char** argv, CommandState& state) {
 	    .argv = argv,
 	};
 
-	auto addConfigSelection = [&](CLI::App* cmd, bool filtering = false) {
-		auto* group =
-		    cmd->add_option_group("Config Selection")
-		        ->description(
-		            "Quickshell detects configurations as named directories under each XDG config "
-		            "directory as `<xdg dir>/quickshell/<config name>/shell.qml`.\n\n"
-		            "If `<xdg dir>/quickshell/shell.qml` exists, it will be registered as the "
-		            "'default' configuration, and no subdirectories will be considered. "
-		            "If --config is not passed, 'default' will be assumed.\n\n"
-		            "Alternatively, a config can be selected by path with --path.\n\n"
-		            "Examples:\n"
-		            "- `~/.config/quickshell/shell.qml` can be run with `qs`\n"
-		            "- `/etc/xdg/quickshell/myconfig/shell.qml` can be run with `qs -c myconfig`\n"
-		            "- `~/myshell/shell.qml` can be run with `qs -p ~/myshell`\n"
-		            "- `~/myshell/randomfile.qml` can be run with `qs -p ~/myshell/randomfile.qml`"
-		        );
+	auto addInstanceFiltering = [&](CLI::App* cmd) {
+		auto* group = cmd->add_option_group("Instance Filtering");
 
-		auto* path = group->add_option("-p,--path", state.config.path)
-		                 ->description("Path to a QML file or config folder.")
-		                 ->envname("QS_CONFIG_PATH");
+		group->add_flag("-n,--newest", state.filter.newest)
+		    ->description("Operate on the most recently launched instance instead of the oldest");
 
-		group->add_option("-c,--config", state.config.name)
-		    ->description("Name of a quickshell configuration to run.")
-		    ->envname("QS_CONFIG_NAME")
-		    ->excludes(path);
-
-		group->add_option("-m,--manifest", state.config.manifest)
+		group->add_flag("--any-display", state.filter.anyDisplay)
 		    ->description(
-		        "[DEPRECATED] Path to a quickshell manifest.\n"
-		        "If a manifest is specified, configs named by -c will point to its entries.\n"
-		        "Defaults to $XDG_CONFIG_HOME/quickshell/manifest.conf"
-		    )
-		    ->envname("QS_MANIFEST")
-		    ->excludes(path);
-
-		if (filtering) {
-			group->add_flag("-n,--newest", state.config.newest)
-			    ->description("Operate on the most recently launched instance instead of the oldest");
-
-			group->add_flag("--any-display", state.config.anyDisplay)
-			    ->description(
-			        "If passed, instances will not be filtered by the display connection they "
-			        "were launched on."
-			    );
-		}
+		        "If passed, instances will not be filtered by the display connection they "
+		        "were launched on."
+		    );
 
 		return group;
 	};
@@ -129,7 +95,6 @@ int parseCommand(int argc, char** argv, CommandState& state) {
 	// Require 0-1 subcommands. Without this, positionals can be parsed as more subcommands.
 	cli->require_subcommand(0, 1);
 
-	addConfigSelection(cli);
 	addLoggingOptions(cli, false);
 	addDebugOptions(cli);
 
@@ -137,17 +102,17 @@ int parseCommand(int argc, char** argv, CommandState& state) {
 		cli->add_option_group("")->add_flag("--private-check-compat", state.misc.checkCompat);
 
 		cli->add_flag("-V,--version", state.misc.printVersion)
-		    ->description("Print quickshell's version and exit.");
+		    ->description("Print gxde-lock's version and exit.");
 
 		cli->add_flag("-n,--no-duplicate", state.misc.noDuplicate)
-		    ->description("Exit immediately if another instance of the given config is running.");
+		    ->description("Exit immediately if another gxde-lock instance is running.");
 
 		cli->add_flag("-d,--daemonize", state.misc.daemonize)
 		    ->description("Detach from the controlling terminal.");
 	}
 
 	{
-		auto* sub = cli->add_subcommand("log", "Print quickshell logs.");
+		auto* sub = cli->add_subcommand("log", "Print gxde-lock logs.");
 
 		auto* file = sub->add_option("file", state.log.file, "Log file to read.");
 
@@ -162,20 +127,20 @@ int parseCommand(int argc, char** argv, CommandState& state) {
 		    ->description("Rules to apply to the log being read, in the format of QT_LOGGING_RULES.");
 
 		auto* instance = addInstanceSelection(sub)->excludes(file);
-		addConfigSelection(sub, true)->excludes(instance)->excludes(file);
+		addInstanceFiltering(sub)->excludes(instance)->excludes(file);
 		addLoggingOptions(sub, false);
 
 		state.subcommand.log = sub;
 	}
 
 	{
-		auto* sub = cli->add_subcommand("list", "List running quickshell instances.");
+		auto* sub = cli->add_subcommand("list", "List running gxde-lock instances.");
 
 		auto* all = sub->add_flag("-a,--all", state.instance.all)
 		                ->description(
 		                    "List all instances.\n"
-		                    "If unspecified, only instances of"
-		                    "the selected config will be listed."
+		                    "If unspecified, only lock screen instances on the current display "
+		                    "will be listed."
 		                );
 
 		sub->add_flag("-j,--json", state.output.json, "Output the list as a json.");
@@ -183,29 +148,29 @@ int parseCommand(int argc, char** argv, CommandState& state) {
 		sub->add_flag("--show-dead", state.instance.includeDead)
 		    ->description("Include dead instances in the list.");
 
-		addConfigSelection(sub, true)->excludes(all);
+		addInstanceFiltering(sub)->excludes(all);
 		addLoggingOptions(sub, false, true);
 
 		state.subcommand.list = sub;
 	}
 
 	{
-		auto* sub = cli->add_subcommand("kill", "Kill quickshell instances.");
+		auto* sub = cli->add_subcommand("kill", "Kill gxde-lock instances.");
 		//sub->add_flag("-a,--all", "Kill all matching instances instead of just one.");
 		auto* instance = addInstanceSelection(sub);
-		addConfigSelection(sub, true)->excludes(instance);
+		addInstanceFiltering(sub)->excludes(instance);
 		addLoggingOptions(sub, false, true);
 
 		state.subcommand.kill = sub;
 	}
 
 	{
-		auto* sub = cli->add_subcommand("ipc", "Communicate with other Quickshell instances.")
+		auto* sub = cli->add_subcommand("ipc", "Communicate with other gxde-lock instances.")
 		                ->require_subcommand();
 		state.ipc.ipc = sub;
 
 		auto* instance = addInstanceSelection(sub);
-		addConfigSelection(sub, true)->excludes(instance);
+		addInstanceFiltering(sub)->excludes(instance);
 		addLoggingOptions(sub, false, true);
 
 		{
@@ -268,7 +233,7 @@ int parseCommand(int argc, char** argv, CommandState& state) {
 		    );
 
 		auto* instance = addInstanceSelection(sub);
-		addConfigSelection(sub, true)->excludes(instance);
+		addInstanceFiltering(sub)->excludes(instance);
 		addLoggingOptions(sub, false, true);
 
 		state.subcommand.msg = sub;

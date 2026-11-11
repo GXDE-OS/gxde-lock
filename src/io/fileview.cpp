@@ -26,7 +26,7 @@
 namespace qs::io {
 
 namespace {
-QS_LOGGING_CATEGORY(logFileView, "quickshell.io.fileview", QtWarningMsg);
+QS_LOGGING_CATEGORY(logFileView, "gxde-lock.io.fileview", QtWarningMsg);
 }
 
 QString FileViewError::toString(FileViewError::Enum value) {

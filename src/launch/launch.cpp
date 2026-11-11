@@ -75,10 +75,10 @@ int launch(const LaunchArgs& args, char** argv) {
 		bool nativeTextRendering = false;
 		bool desktopSettingsAware = true;
 		bool useSystemStyle = false;
-		QString iconTheme = qEnvironmentVariable("QS_ICON_THEME");
+		QString iconTheme = qEnvironmentVariable("GXDE_LOCK_ICON_THEME");
 		QHash<QString, QString> envOverrides;
 		QHash<QString, QString> defaultEnv;
-		QString appId = qEnvironmentVariable("QS_APP_ID");
+		QString appId = qEnvironmentVariable("GXDE_LOCK_APP_ID");
 		bool dropExpensiveFonts = false;
 		QString dataDir;
 		QString stateDir;
@@ -139,7 +139,7 @@ int launch(const LaunchArgs& args, char** argv) {
 	qInfo() << "Shell ID:" << shellId << "Path ID" << pathId;
 
 	auto launchTime = qs::Common::LAUNCH_TIME.toSecsSinceEpoch();
-	auto appId = pragmas.appId.isEmpty() ? QStringLiteral("org.quickshell") : pragmas.appId;
+	auto appId = pragmas.appId.isEmpty() ? QStringLiteral("gxde-lock") : pragmas.appId;
 
 	InstanceInfo::CURRENT = InstanceInfo {
 	    .instanceId = base36Encode(getpid()) + base36Encode(launchTime),
@@ -152,7 +152,7 @@ int launch(const LaunchArgs& args, char** argv) {
 	};
 
 #if CRASH_HANDLER
-	if (qEnvironmentVariableIsSet("QS_DISABLE_CRASH_HANDLER")) {
+	if (qEnvironmentVariableIsSet("GXDE_LOCK_DISABLE_CRASH_HANDLER")) {
 		qInfo() << "Crash handling disabled.";
 	} else {
 		crash::CrashHandler::init();
@@ -188,7 +188,7 @@ int launch(const LaunchArgs& args, char** argv) {
 		qputenv(var.toUtf8(), val.toUtf8());
 	}
 
-	pragmas.dropExpensiveFonts |= qEnvironmentVariableIntValue("QS_DROP_EXPENSIVE_FONTS") == 1;
+	pragmas.dropExpensiveFonts |= qEnvironmentVariableIntValue("GXDE_LOCK_DROP_EXPENSIVE_FONTS") == 1;
 
 	if (pragmas.dropExpensiveFonts) {
 		if (auto* runDir = QsPaths::instance()->instanceRunDir()) {

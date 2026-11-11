@@ -23,7 +23,7 @@
 namespace qs::io::ipc {
 
 namespace {
-QS_LOGGING_CATEGORY(logIpcHandler, "quickshell.ipchandler", QtWarningMsg)
+QS_LOGGING_CATEGORY(logIpcHandler, "gxde-lock.ipchandler", QtWarningMsg)
 }
 
 bool IpcFunction::resolve(QString& error) {

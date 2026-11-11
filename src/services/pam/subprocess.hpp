@@ -9,7 +9,7 @@
 // endls are intentional as it makes debugging much easier when the buffer actually flushes.
 // NOLINTBEGIN
 #define logIf(log)                                                                                 \
-	if (log) std::cout << "quickshell.service.pam.subprocess: "
+	if (log) std::cout << "gxde-lock.service.pam.subprocess: "
 // NOLINTEND
 
 class PamSubprocess {

@@ -45,7 +45,7 @@ else ()
 
 		if (NOT CPPTRACE_SIGNAL_SAFE_UNWIND EQUAL 0)
 			message(STATUS "Cpptrace signal safe unwind test exited with: ${CPPTRACE_SIGNAL_SAFE_UNWIND}")
-			message(FATAL_ERROR "Cpptrace was built without CPPTRACE_UNWIND_WITH_LIBUNWIND set to true. Enable libunwind support in the package or set VENDOR_CPPTRACE to true when building Quickshell.")
+			message(FATAL_ERROR "Cpptrace was built without CPPTRACE_UNWIND_WITH_LIBUNWIND set to true. Enable libunwind support in the package or set VENDOR_CPPTRACE to true when building gxde-lock.")
 		endif()
 	endif ()
 endif ()
