@@ -67,6 +67,7 @@ private:
     void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
     void enterEvent(QEnterEvent *event) Q_DECL_OVERRIDE;
     void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
 
     const QPixmap pixmapHandle(const QPixmap &pixmap);
     void setBackgroundFocusProgress(qreal progress);

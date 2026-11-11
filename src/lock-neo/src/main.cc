@@ -461,9 +461,30 @@ int main(int argc, char* argv[]) {
   // locked (monitors that drop off the bus in deep sleep, docks, KVMs), and
   // the primary output can change underneath us; a stale per-window flag
   // would leave every window without a prompt and the user locked out.
-  // Re-derive the owner whenever the screen set or the primary changes.
+  // Re-derive the owner whenever the screen set, the primary or the focus
+  // changes.
+  auto ownsWindow = [&windows](QWindow* window) {
+    for (QQuickWindow* candidate : std::as_const(windows)) {
+      if (candidate == window) return true;
+    }
+    return false;
+  };
+
   auto syncPrimaryWindow = [&] {
-    QQuickWindow* next = windows.value(QGuiApplication::primaryScreen());
+    QQuickWindow* next = nullptr;
+    if (!useX11 && !demo) {
+      // Wayland has no primary output and the compositor, not us, decides
+      // which lock surface receives the keyboard; secondary windows ignore
+      // keys. Put the prompt where typing goes, and keep it where it is
+      // while no window has focus.
+      QWindow* focused = QGuiApplication::focusWindow();
+      if (ownsWindow(focused)) {
+        next = static_cast<QQuickWindow*>(focused);
+      } else if (ownsWindow(primaryWindow)) {
+        next = primaryWindow;
+      }
+    }
+    if (!next) next = windows.value(QGuiApplication::primaryScreen());
     if (!next && !windows.isEmpty()) {
       next = windows.value(QGuiApplication::screens().value(0));
       if (!next) next = windows.cbegin().value();
@@ -524,20 +545,30 @@ int main(int argc, char* argv[]) {
 
     window->setScreen(screen);
 
-    // On X11 locking all screen instead of just primary screen.
-    if (!demo && useX11) {
-      auto cover = [window, screen] {
-        window->setGeometry(screen->geometry());
+    // Qt binds a top-level window to whichever screen contains its position,
+    // overriding setScreen(), and LockWindow.qml starts every window at 0,0.
+    // Pin each window to its own output: on X11 the other outputs would stay
+    // uncovered, on Wayland their windows would collapse onto one output and
+    // the rest would get no lock surface (black, and unusable once the
+    // compositor hands them the keyboard). On Wayland only the position is
+    // ours; the lock surface's configure owns the size.
+    if (!demo) {
+      auto pin = [window, screen, useX11] {
+        if (useX11) {
+          window->setGeometry(screen->geometry());
+        } else {
+          window->setPosition(screen->geometry().topLeft());
+        }
       };
-      cover();
-      QObject::connect(screen, &QScreen::geometryChanged, window, cover);
+      pin();
+      QObject::connect(screen, &QScreen::geometryChanged, window, pin);
     }
 
     if (!demo && !useX11) {
       const bool usingSessionLock =
           sessionLockIntegration &&
           sessionLockIntegration->isAvailable() &&
-          sessionLockIntegration->installOnWindow(window);
+          sessionLockIntegration->installOnWindow(window, screen);
       if (!usingSessionLock) configureLayerShell(window);
     }
 
@@ -601,6 +632,10 @@ int main(int argc, char* argv[]) {
                    [&destroyWindow](QScreen* screen) { destroyWindow(screen); });
   QObject::connect(&app, &QGuiApplication::primaryScreenChanged, &app,
                    [&syncPrimaryWindow](QScreen*) { syncPrimaryWindow(); });
+  if (!useX11 && !demo) {
+    QObject::connect(&app, &QGuiApplication::focusWindowChanged, &app,
+                     [&syncPrimaryWindow](QWindow*) { syncPrimaryWindow(); });
+  }
 
   QObject::connect(&model, &SessionBaseModel::visibleChanged, &app,
                    [&](bool visible) {

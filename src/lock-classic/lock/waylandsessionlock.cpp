@@ -48,23 +48,11 @@ const ext_session_lock_surface_v1_listener kSurfaceListener = {
     WaylandSessionLockSurface::handleConfigureCallback,
 };
 
-wl_output* nativeOutputForWindow(QtWaylandClient::QWaylandWindow* window) {
-    if (!window || !window->window() || !window->window()->screen()) {
-        return nullptr;
-    }
-
-    QScreen* screen = window->window()->screen();
-    auto* waylandScreen =
-        screen->nativeInterface<QNativeInterface::QWaylandScreen>();
+wl_output* nativeOutput(QScreen* screen) {
+    auto* waylandScreen = screen
+        ? screen->nativeInterface<QNativeInterface::QWaylandScreen>()
+        : nullptr;
     return waylandScreen ? waylandScreen->output() : nullptr;
-}
-
-QSize fallbackSurfaceSize(QtWaylandClient::QWaylandWindow* window) {
-    if (!window || !window->window() || !window->window()->screen()) {
-        return QSize();
-    }
-
-    return window->window()->screen()->geometry().size();
 }
 
 }  // namespace
@@ -128,9 +116,17 @@ void WaylandSessionLockIntegration::bind(wl_registry *registry, int id,
             static_cast<uint32_t>(bindVersion)));
 }
 
-bool WaylandSessionLockIntegration::installOnWindow(QWindow* window) {
+bool WaylandSessionLockIntegration::installOnWindow(QWindow* window,
+        QScreen* screen) {
     if (!isAvailable() || !window) {
         return false;
+    }
+
+    if (screen) {
+        m_targetScreens.insert(window, screen);
+        connect(window, &QObject::destroyed, this, [this, window] {
+            m_targetScreens.remove(window);
+        });
     }
 
     if (!window->handle()) {
@@ -153,6 +149,20 @@ bool WaylandSessionLockIntegration::installOnWindow(QWindow* window) {
 
     waylandWindow->setShellIntegration(this);
     return true;
+}
+
+wl_output* WaylandSessionLockIntegration::outputForWindow(
+        QtWaylandClient::QWaylandWindow* window) const {
+    QWindow* qwindow = window ? window->window() : nullptr;
+    if (!qwindow) {
+        return nullptr;
+    }
+
+    const QPointer<QScreen> target = m_targetScreens.value(qwindow);
+    if (target) {
+        return nativeOutput(target);
+    }
+    return nativeOutput(qwindow->screen());
 }
 
 bool WaylandSessionLockIntegration::isAvailable() const {
@@ -280,7 +290,7 @@ WaylandSessionLockSurface::WaylandSessionLockSurface(
 
     ext_session_lock_v1* lock = m_integration->ensureLock();
     wl_surface* surface = wlSurface();
-    wl_output* output = nativeOutputForWindow(window);
+    wl_output* output = m_integration->outputForWindow(window);
     if (!lock || !surface || !output) {
         qWarning()
             << "(Lock) Fatal: Cannot create ext-session-lock-v1 surface!!";
@@ -304,7 +314,7 @@ void WaylandSessionLockSurface::bindLockSurface() {
     wl_surface* surface = wlSurface();
     auto* waylandWindow =
         static_cast<QtWaylandClient::QWaylandWindow *>(window());
-    wl_output* output = nativeOutputForWindow(waylandWindow);
+    wl_output* output = m_integration->outputForWindow(waylandWindow);
     if (!lock || !surface || !output) {
         qWarning()
             << "(Lock) Fatal: Cannot create ext-session-lock-v1 surface!!";
@@ -414,12 +424,18 @@ void WaylandSessionLockSurface::handleConfigure(uint32_t serial,
         return;
     }
 
-    QSize size(static_cast<int>(width), static_cast<int>(height));
-    if (size.isEmpty()) {
-        size = fallbackSurfaceSize(
-            static_cast<QtWaylandClient::QWaylandWindow *>(window()));
+    // Compositors send 0x0 while the output is being turned off or removed.
+    // Acking it binds the next commit to 0x0, which Qt cannot honour; the
+    // compositor then kills the connection and the session stays locked with
+    // no locker left to unlock it. Keep the last good configure instead: this
+    // surface either gets a real size again or goes away with its screen.
+    if (width == 0 || height == 0) {
+        qInfo() << "(Lock) Ignoring empty ext-session-lock-v1 configure for"
+                << window()->window()->screen();
+        return;
     }
 
+    const QSize size(static_cast<int>(width), static_cast<int>(height));
     m_pendingConfigureSerial = serial;
     m_pendingSize = size;
     if (!m_configured) {

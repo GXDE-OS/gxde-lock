@@ -22,11 +22,13 @@
 #include <QtWaylandClient/private/qwaylandshellsurface_p.h>
 
 #include <QHash>
+#include <QPointer>
 #include <QSet>
 #include <QSize>
 
 #include "wayland-ext-session-lock-v1-client-protocol.h"
 
+class QScreen;
 class QWindow;
 class WaylandSessionLockSurface;
 
@@ -45,7 +47,10 @@ public:
     const struct wl_interface* extensionInterface() const override;
     void bind(struct wl_registry* registry, int id, int version) override;
 
-    bool installOnWindow(QWindow* window);
+    // Lock surfaces are bound to |screen|'s output. Qt may move a window to a
+    // different QScreen on its own (it follows the window position, and
+    // mirrored outputs share one), so the window's screen is only a fallback.
+    bool installOnWindow(QWindow* window, QScreen* screen = nullptr);
     bool isAvailable() const;
     bool isSessionLocked() const;
     bool hasLockRequest() const;
@@ -61,6 +66,8 @@ Q_SIGNALS:
     void finished();
 
 private:
+    struct wl_output* outputForWindow(
+        QtWaylandClient::QWaylandWindow* window) const;
     bool registerSurface(WaylandSessionLockSurface* surface,
         struct wl_output* output);
     void unregisterSurface(WaylandSessionLockSurface* surface);
@@ -69,6 +76,7 @@ private:
     struct ext_session_lock_v1* m_lock = nullptr;
     QSet<WaylandSessionLockSurface *> m_surfaces;
     QHash<struct wl_output*, WaylandSessionLockSurface *> m_outputSurfaces;
+    QHash<QWindow *, QPointer<QScreen>> m_targetScreens;
     bool m_locked = false;
     bool m_unlockPending = false;
 

@@ -312,6 +312,21 @@ void FullscreenBackground::enterEvent(QEnterEvent *event)
     return QWidget::enterEvent(event);
 }
 
+void FullscreenBackground::changeEvent(QEvent *event)
+{
+    // The password box follows the pointer. On Wayland the compositor also
+    // decides which lock surface gets the keyboard, and after outputs come
+    // and go that may be one the pointer never entered; typing there would
+    // go nowhere. Bring the box to whichever frame holds the keyboard.
+    if (event->type() == QEvent::ActivationChange && isActiveWindow()
+            && !isX11Platform() && m_content && !m_content->isVisible()) {
+        m_content->show();
+        emit contentVisibleChanged(true);
+    }
+
+    QWidget::changeEvent(event);
+}
+
 void FullscreenBackground::leaveEvent(QEvent *event)
 {
     return QWidget::leaveEvent(event);

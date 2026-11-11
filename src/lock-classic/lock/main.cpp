@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
                 sessionLockIntegration
                 && sessionLockIntegration->isAvailable()
                 && sessionLockIntegration->installOnWindow(
-                    lockFrame->windowHandle());
+                    lockFrame->windowHandle(), screen);
             if (!usingSessionLock) {
                 configureLayerShell(lockFrame);
             }
