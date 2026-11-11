@@ -31,21 +31,21 @@ enum class LockStyle {
 };
 
 struct LockStylePaths {
-  QString gxdmConfig;
+  QString configFile;
   QString omgConfig;
   QString binDir;
 };
 
 // Resolves the configured lock screen style and the executable that implements
-// it. gxdm.conf's [General] LockScreenStyle takes precedence over OMG.conf's
-// [NextFeatReq] SwitchLkScrStyle; the default is modern, falling back to
-// classic when gxdm-lock-neo is not installed.
+// it. gxde-lock.conf's [General] LockScreenStyle takes precedence over
+// OMG.conf's [NextFeatReq] SwitchLkScrStyle; the default is modern, falling
+// back to classic when gxde-lock-neo is not installed.
 class LockStyleResolver {
  public:
   static LockStylePaths DefaultPaths();
 
   static LockStyle Resolve(const LockStylePaths& paths);
-  static LockStyle ResolveFromFiles(const QString& gxdmConfig,
+  static LockStyle ResolveFromFiles(const QString& configFile,
                                     const QString& omgConfig,
                                     const QString& binDir);
 

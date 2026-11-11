@@ -1,0 +1,10 @@
+#%PAM-1.0
+# gxde-lock only authenticates the user of a running session; it never opens
+# a session or changes a password. pam_nologin and "user != root" are left out
+# on purpose: they must not keep anyone out of a session that is already open.
+
+@include common-auth
+-auth   optional        pam_gnome_keyring.so
+-auth   optional        pam_kwallet5.so
+
+@include common-account

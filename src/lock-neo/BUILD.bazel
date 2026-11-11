@@ -3,13 +3,19 @@ load("//bazel/qt:qt.bzl", "qt_cc_binary", "qt_qml_module", "qt_rcc")
 package(default_visibility = ["//visibility:public"])
 
 # QML lock screen. Mirrors src/lock-neo/CMakeLists.txt: the UI is a flattened
-# "Lock" QML module, images/fonts come from the neo greeter's resources, and
+# "Lock" QML module, icons and the virtual keyboard style come from res/, and
 # authentication/D-Bus/session-lock come from //src/lock-common:lock_common.
 qt_cc_binary(
-    name = "gxdm-lock-neo",
+    name = "gxde-lock-neo",
     srcs = [
         "src/main.cc",
-        "//src/greeter-neo:rcc_resources",
+        # Power/keyboard icons and the virtual keyboard style.
+        qt_rcc(
+            name = "rcc_resources",
+            qrc = "res/resources.qrc",
+            data = glob(["res/icons/*.svg", "res/vkb-style/**"]),
+            init_name = "resources",
+        ),
         # Lock screen icons (media card, volume, notifications, user switch).
         qt_rcc(
             name = "rcc_lock_neo",
@@ -40,7 +46,7 @@ qt_cc_binary(
         ),
     ],
     deps = [
-        "//src/common:greeter_appearance",
+        "//src/common:lock_appearance",
         "//src/lock-common:lock_common",
     ],
     linkopts = [

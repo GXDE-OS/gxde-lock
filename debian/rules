@@ -1,5 +1,5 @@
 #!/usr/bin/make -f
-# GXDE Display Manager - Debian packaging
+# gxde-lock - Debian packaging
 
 export DH_VERBOSE = 1
 export DH_ALWAYS_EXCLUDE = .bazel-root
@@ -9,18 +9,10 @@ export DH_ALWAYS_EXCLUDE = .bazel-root
 
 override_dh_auto_configure:
 	dh_auto_configure --buildsystem=cmake -- \
-		-DBUILD_WITH_QT6=ON \
-		-DBUILD_CLASSIC_GREETER=ON \
-		-DBUILD_MAN_PAGES=OFF \
-		-DINSTALL_PAM_CONFIGURATION=ON \
-		-DUID_MIN=1000 \
-		-DUID_MAX=60000
+		-DINSTALL_PAM_CONFIGURATION=ON
 
 override_dh_auto_install:
-	dh_auto_install --buildsystem=cmake --destdir=debian/gxdm
+	dh_auto_install --buildsystem=cmake --destdir=debian/gxde-lock
 
 override_dh_auto_clean:
 	dh_auto_clean --buildsystem=cmake
-
-override_dh_installsystemd:
-	dh_installsystemd --no-enable --no-start --no-stop-on-upgrade gxdm.service

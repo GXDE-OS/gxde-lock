@@ -1,12 +1,11 @@
 #ifndef SYSTEMDEFAULTS_H
 #define SYSTEMDEFAULTS_H
 
-// OS defaults shared by gxdm-greeter-classic, gxdm-lock-classic and
-// gxdm-greeter-neo.
+// OS defaults shared by gxde-lock-classic and gxde-lock-neo.
 
 #include <QString>
 
-namespace GxdmSystemDefaults {
+namespace LockSystemDefaults {
 
 QString operatingSystemId(const QString &osReleasePath = QString());
 bool isGxdeOperatingSystem(const QString &osReleasePath = QString());
@@ -14,6 +13,6 @@ QString defaultSessionDesktopFile(const QString &osReleasePath = QString());
 QString initialSessionDesktopFile(const QString &rememberedSession,
     const QString &osReleasePath = QString());
 
-} // namespace GxdmSystemDefaults
+} // namespace LockSystemDefaults
 
 #endif // SYSTEMDEFAULTS_H

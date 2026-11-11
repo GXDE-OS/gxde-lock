@@ -1,4 +1,4 @@
-# GXDE-Display-Manager Bazel config.
+# gxde-lock Bazel config.
 
 build --spawn_strategy=local
 build --cxxopt=-std=c++17

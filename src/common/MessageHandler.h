@@ -21,7 +21,6 @@
 #ifndef SDDM_MESSAGEHANDLER_H
 #define SDDM_MESSAGEHANDLER_H
 
-#include "Constants.h"
 
 #include <QDateTime>
 #include <QStandardPaths>
@@ -70,22 +69,16 @@ namespace SDDM {
 #endif
 
     static void standardLogger(QtMsgType type, const QString &msg) {
-        static QFile file(QStringLiteral(LOG_FILE));
+        static QFile file;
 
-        // Try to open the log file if we're not outputting to a terminal
+        // Not on a terminal: log to a file. The auth helper runs as the locked
+        // user, so this is ~/.local/share/$appname/gxde-lock.log.
         if (!file.isOpen() && !isatty(STDERR_FILENO)) {
+            const QString directory = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+            QDir().mkpath(directory);
+            file.setFileName(directory + QLatin1String("/gxde-lock.log"));
             if (!file.open(QFile::Append | QFile::WriteOnly))
                 file.open(QFile::Truncate | QFile::WriteOnly);
-
-            // If we can't open the file, create it in a writable location
-            // It will look spmething like ~/.local/share/$appname/gxdm.log
-            // or for the gxdm user /var/lib/gxdm/.local/share/$appname/gxdm.log
-            if (!file.isOpen()) {
-                QDir().mkpath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
-                file.setFileName(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QLatin1String("/gxdm.log"));
-                if (!file.open(QFile::Append | QFile::WriteOnly))
-                    file.open(QFile::Truncate | QFile::WriteOnly);
-            }
         }
 
         // create timestamp
@@ -122,9 +115,8 @@ namespace SDDM {
 
     static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &prefix, const QString &msg) {
 #ifdef HAVE_JOURNALD
-        // don't log to journald if running interactively, this is likely
-        // the case when running sddm in test mode
-        static bool isInteractive = isatty(STDERR_FILENO) && qgetenv("USER") != "gxdm";
+        // don't log to journald if running interactively
+        static bool isInteractive = isatty(STDERR_FILENO);
         if (!isInteractive) {
             // log to journald
             journaldLogger(type, context, msg);

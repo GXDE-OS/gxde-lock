@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=GXDE Lock Service
+Exec=@CMAKE_INSTALL_FULL_BINDIR@/gxde-lock-classic --daemon --auto-enroll
+NoDisplay=true
+X-GNOME-Autostart-enabled=true

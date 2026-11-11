@@ -1,69 +1,17 @@
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
-load("//bazel/qt:qt.bzl", "gxdm_configure_file")
 
 package(default_visibility = ["//visibility:public"])
-
-# Configure the @VAR@ / ${VAR} templates.
-gxdm_configure_file(
-    name = "gxdm_service",
-    src = "gxdm.service.in",
-    out = "gxdm.service",
-)
-
-gxdm_configure_file(
-    name = "gxdm_sysusers",
-    src = "gxdm-sysuser.conf.in",
-    out = "gxdm-sysusers.conf",
-)
-
-gxdm_configure_file(
-    name = "gxdm_tmpfiles",
-    src = "gxdm-tmpfiles.conf.in",
-    out = "gxdm-tmpfiles.conf",
-)
-
-gxdm_configure_file(
-    name = "gxdm_greeter_pam",
-    src = "gxdm-greeter.pam.in",
-    out = "gxdm-greeter.pam",
-    extra = {"LOGIND_PAM_MODULE": "pam_systemd.so"},
-)
-
-pkg_files(
-    name = "systemd_pkg",
-    srcs = [":gxdm_service"],
-    prefix = "/usr/lib/systemd/system",
-    renames = {":gxdm_service": "gxdm.service"},
-)
-
-pkg_files(
-    name = "sysusers_pkg",
-    srcs = [":gxdm_sysusers"],
-    prefix = "/usr/lib/sysusers.d",
-    renames = {":gxdm_sysusers": "gxdm.conf"},
-)
-
-pkg_files(
-    name = "tmpfiles_pkg",
-    srcs = [":gxdm_tmpfiles"],
-    prefix = "/usr/lib/tmpfiles.d",
-    renames = {":gxdm_tmpfiles": "gxdm.conf"},
-)
 
 # PAM configs (Debian variants), installed to /etc/pam.d with canonical names.
 pkg_files(
     name = "pam_pkg",
     srcs = [
-        "debian.gxdm.pam",
-        "debian.gxdm-autologin.pam",
-        "debian.gxdm-fingerprint.pam",
-        ":gxdm_greeter_pam",
+        "debian.gxde-lock.pam",
+        "debian.gxde-lock-fingerprint.pam",
     ],
     prefix = "/etc/pam.d",
     renames = {
-        "debian.gxdm.pam": "gxdm",
-        "debian.gxdm-autologin.pam": "gxdm-autologin",
-        "debian.gxdm-fingerprint.pam": "gxdm-fingerprint",
-        ":gxdm_greeter_pam": "gxdm-greeter",
+        "debian.gxde-lock.pam": "gxde-lock",
+        "debian.gxde-lock-fingerprint.pam": "gxde-lock-fingerprint",
     },
 )

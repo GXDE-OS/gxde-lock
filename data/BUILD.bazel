@@ -1,106 +1,51 @@
-load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "strip_prefix")
-load("//bazel/qt:qt.bzl", "gxdm_configure_file")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
+load("//bazel/qt:qt.bzl", "lock_configure_file")
 
 package(default_visibility = ["//visibility:public"])
 
-_DATADIR = "/usr/share/gxdm"
-
-# Keyboard/locale flags.
-pkg_files(
-    name = "flags_pkg",
-    srcs = glob(["flags/*.png"]),
-    prefix = _DATADIR + "/flags",
-    renames = {f: f[len("flags/"):] for f in glob(["flags/*.png"])},
-)
-
-# Face icons
-pkg_files(
-    name = "faces_pkg",
-    srcs = [
-        "faces/root.face.icon.png",
-        "faces/default.face.icon.png",
-    ],
-    prefix = _DATADIR + "/faces",
-    renames = {
-        "faces/root.face.icon.png": "root.face.icon",
-        "faces/default.face.icon.png": ".face.icon",
-    },
-)
-
-# Session scripts (executable).
-pkg_files(
-    name = "scripts_pkg",
-    srcs = [
-        "scripts/Xsession",
-        "scripts/Xsetup",
-        "scripts/Xstop",
-        "scripts/wayland-session",
-    ],
-    attributes = pkg_attributes(mode = "0755"),
-    prefix = _DATADIR + "/scripts",
-    renames = {
-        "scripts/Xsession": "Xsession",
-        "scripts/Xsetup": "Xsetup",
-        "scripts/Xstop": "Xstop",
-        "scripts/wayland-session": "wayland-session",
-    },
-)
-
-# Bundled themes (preserve tree under themes/).
-pkg_files(
-    name = "themes_pkg",
-    srcs = glob(
-        ["themes/**"],
-        exclude = ["themes/CMakeLists.txt"],
-    ),
-    strip_prefix = strip_prefix.from_pkg(),
-    prefix = _DATADIR,
-)
-
-# Compiled translations.
-pkg_files(
-    name = "translations_pkg",
-    srcs = ["//data/translations:qm"],
-    prefix = _DATADIR + "/translations-qt6",
-)
-
-# D-Bus system policy
+# D-Bus system policy of gxde-lock-system.
 pkg_files(
     name = "dbus_pkg",
-    srcs = [
-        "org.freedesktop.DisplayManager.conf",
-        "top.gxde.DisplayManager.conf",
-    ],
+    srcs = ["top.gxde.Lock.conf"],
     prefix = "/usr/share/dbus-1/system.d",
-    renames = {
-        "org.freedesktop.DisplayManager.conf": "org.freedesktop.DisplayManager-gxdm.conf",
-        "top.gxde.DisplayManager.conf": "top.gxde.DisplayManager.conf",
-    },
 )
 
-gxdm_configure_file(
+pkg_files(
+    name = "omg_pkg",
+    srcs = ["configs/OMG.conf"],
+    prefix = "/etc/gxde-lock",
+    renames = {"configs/OMG.conf": "OMG.conf"},
+)
+
+lock_configure_file(
     name = "configure_lock_autostart",
-    src = "gxdm-lock-classic.desktop.in",
-    out = "gxdm-lock-classic.desktop",
-    extra = {"CMAKE_INSTALL_FULL_BINDIR": "/usr/bin"},
+    src = "gxde-lock.desktop.in",
+    out = "gxde-lock.desktop",
 )
 
-gxdm_configure_file(
-    name = "configure_display_manager_service",
-    src = "top.gxde.DisplayManager.service.in",
-    out = "top.gxde.DisplayManager.service",
-    extra = {"CMAKE_INSTALL_FULL_BINDIR": "/usr/bin"},
+lock_configure_file(
+    name = "configure_session_service",
+    src = "top.gxde.Lock.service.in",
+    out = "session/top.gxde.Lock.service",
+)
+
+lock_configure_file(
+    name = "configure_system_service",
+    src = "top.gxde.Lock.System.service.in",
+    out = "system/top.gxde.Lock.service",
 )
 
 pkg_files(
     name = "session_integration_pkg",
     srcs = [
-        "gxdm-lock-classic.desktop",
-        "top.gxde.DisplayManager.service",
+        "gxde-lock.desktop",
+        "session/top.gxde.Lock.service",
+        "system/top.gxde.Lock.service",
     ],
     prefix = "/",
     renames = {
-        "gxdm-lock-classic.desktop": "etc/xdg/autostart/gxdm-lock-classic.desktop",
-        "top.gxde.DisplayManager.service": "usr/share/dbus-1/services/top.gxde.DisplayManager.service",
+        "gxde-lock.desktop": "etc/xdg/autostart/gxde-lock.desktop",
+        "session/top.gxde.Lock.service": "usr/share/dbus-1/services/top.gxde.Lock.service",
+        "system/top.gxde.Lock.service": "usr/share/dbus-1/system-services/top.gxde.Lock.service",
     },
 )

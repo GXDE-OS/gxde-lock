@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=top.gxde.Lock
+Exec=@CMAKE_INSTALL_FULL_BINDIR@/gxde-lock-classic --daemon

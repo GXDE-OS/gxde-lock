@@ -1,132 +1,89 @@
 set(QT_USE_QTTEST TRUE)
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    add_executable(WaylandCleanupProcess WaylandCleanupProcess.cpp)
-    target_link_libraries(WaylandCleanupProcess PRIVATE
-        Qt${QT_MAJOR_VERSION}::Core Qt${QT_MAJOR_VERSION}::Network)
-    add_executable(WaylandCleanupTest WaylandCleanupTest.cpp)
-    target_link_libraries(WaylandCleanupTest PRIVATE
-        Qt${QT_MAJOR_VERSION}::Core Qt${QT_MAJOR_VERSION}::Test)
-    target_compile_definitions(WaylandCleanupTest PRIVATE
-        WAYLAND_HELPER_PATH="$<TARGET_FILE:gxdm-helper-start-wayland>"
-        CLEANUP_PROCESS_PATH="$<TARGET_FILE:WaylandCleanupProcess>")
-    add_dependencies(WaylandCleanupTest gxdm-helper-start-wayland WaylandCleanupProcess)
-    add_test(NAME WaylandCleanup COMMAND WaylandCleanupTest)
-    set_tests_properties(WaylandCleanup PROPERTIES TIMEOUT 90)
-endif()
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
+pkg_check_modules(TEST_DTK2WIDGET REQUIRED IMPORTED_TARGET dtk2widget)
 
-include_directories(../src/common)
-
-set(ConfigurationTest_SRCS ConfigurationTest.cpp ../src/common/ConfigReader.cpp)
-add_executable(ConfigurationTest ${ConfigurationTest_SRCS})
-add_test(NAME Configuration COMMAND ConfigurationTest)
-
-target_link_libraries(ConfigurationTest Qt${QT_MAJOR_VERSION}::Core Qt${QT_MAJOR_VERSION}::Test)
-
-set(QMLThemeConfigTest_SRCS QMLThemeConfigTest.cpp ../src/common/ThemeConfig.cpp ../src/common/ThemeConfig.h)
-add_executable(QMLThemeConfigTest ${QMLThemeConfigTest_SRCS})
-target_include_directories(QMLThemeConfigTest PRIVATE ../src/common/)
-add_test(NAME QMLThemeConfig COMMAND QMLThemeConfigTest -platform offscreen -input ${CMAKE_CURRENT_SOURCE_DIR}/QMLThemeConfigTest.qml WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(QMLThemeConfigTest PRIVATE Qt${QT_MAJOR_VERSION}::Quick Qt${QT_MAJOR_VERSION}::QuickTest)
-
-set(SessionTest_SRCS SessionTest.cpp ../src/common/Configuration.cpp ../src/common/ConfigReader.cpp ../src/common/Session.cpp)
-add_executable(SessionTest ${SessionTest_SRCS})
-target_include_directories(SessionTest PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../src/common)
-add_test(NAME Session COMMAND SessionTest)
-target_link_libraries(SessionTest Qt${QT_MAJOR_VERSION}::Core Qt${QT_MAJOR_VERSION}::Test)
-
-add_executable(SessionReuseTest SessionReuseTest.cpp)
-target_include_directories(SessionReuseTest PRIVATE ../src/daemon)
-add_test(NAME SessionReuse COMMAND SessionReuseTest)
-target_link_libraries(SessionReuseTest Qt${QT_MAJOR_VERSION}::Core Qt${QT_MAJOR_VERSION}::Test)
-
-if(BUILD_CLASSIC_GREETER)
-    find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Widgets)
-    pkg_check_modules(TEST_DTK2WIDGET REQUIRED IMPORTED_TARGET dtk2widget)
-    add_executable(SystemDefaultsTest
-        SystemDefaultsTest.cpp
-        ../src/common/SystemDefaults.cpp
-        ../src/common/SystemDefaults.h
-    )
-    target_include_directories(SystemDefaultsTest PRIVATE
-        ../src/common
-    )
-    add_test(NAME SystemDefaults COMMAND SystemDefaultsTest)
-    target_link_libraries(SystemDefaultsTest PRIVATE
-        Qt${QT_MAJOR_VERSION}::Core
-        Qt${QT_MAJOR_VERSION}::Test
-    )
-
-    add_executable(GreeterAppearanceTest
-        GreeterAppearanceTest.cpp
-        ../src/common/GreeterAppearance.cpp
-        ../src/common/GreeterAppearance.h
-    )
-    target_include_directories(GreeterAppearanceTest PRIVATE
-        ../src/common
-    )
-    add_test(NAME GreeterAppearance COMMAND GreeterAppearanceTest)
-    target_link_libraries(GreeterAppearanceTest PRIVATE
-        Qt${QT_MAJOR_VERSION}::Core
-        Qt${QT_MAJOR_VERSION}::DBus
-        Qt${QT_MAJOR_VERSION}::Gui
-        Qt${QT_MAJOR_VERSION}::Test
-    )
-
-    add_executable(GreeterScaleTest
-        GreeterScaleTest.cpp
-        ../src/common/GreeterScale.cpp
-        ../src/common/GreeterScale.h
-    )
-    target_include_directories(GreeterScaleTest PRIVATE
-        ../src/common
-    )
-    add_test(NAME GreeterScale COMMAND GreeterScaleTest)
-    target_link_libraries(GreeterScaleTest PRIVATE
-        Qt${QT_MAJOR_VERSION}::Core
-        Qt${QT_MAJOR_VERSION}::Test
-        X11
-        Xrandr
-    )
-
-    add_executable(VirtualKeyboardTest
-        VirtualKeyboardTest.cpp
-        ../src/greeter-classic/widgets/virtualkbinstance.cpp
-        ../src/greeter-classic/widgets/virtualkbinstance.h
-    )
-    add_test(NAME VirtualKeyboard COMMAND VirtualKeyboardTest -platform offscreen)
-    target_link_libraries(VirtualKeyboardTest PRIVATE
-        Qt${QT_MAJOR_VERSION}::Widgets
-        Qt${QT_MAJOR_VERSION}::Test
-        PkgConfig::TEST_DTK2WIDGET
-    )
-
-    add_executable(MultiScreenManagerTest
-        MultiScreenManagerTest.cpp
-        ../src/greeter-classic/global_util/multiscreenmanager.cpp
-        ../src/greeter-classic/global_util/multiscreenmanager.h
-    )
-    target_include_directories(MultiScreenManagerTest PRIVATE
-        ../src/greeter-classic/global_util
-    )
-    add_test(NAME MultiScreenManager
-        COMMAND MultiScreenManagerTest -platform offscreen)
-    target_link_libraries(MultiScreenManagerTest PRIVATE
-        Qt${QT_MAJOR_VERSION}::Widgets
-        Qt${QT_MAJOR_VERSION}::Test
-    )
-endif()
-
-add_executable(GreeterSettingsTest
-    greeter_settings_test.cc
-    ../src/daemon/greeter_settings.cc
-    ../src/common/ConfigReader.cpp
+add_executable(SystemDefaultsTest
+    SystemDefaultsTest.cpp
+    ../src/common/SystemDefaults.cpp
+    ../src/common/SystemDefaults.h
 )
-target_include_directories(GreeterSettingsTest PRIVATE
-    ../src/daemon ${CMAKE_CURRENT_BINARY_DIR}/../src/common)
-target_link_libraries(GreeterSettingsTest PRIVATE
-    Qt${QT_MAJOR_VERSION}::Core Qt${QT_MAJOR_VERSION}::Test)
-add_test(NAME GreeterSettings COMMAND GreeterSettingsTest)
+target_include_directories(SystemDefaultsTest PRIVATE
+    ../src/common
+)
+add_test(NAME SystemDefaults COMMAND SystemDefaultsTest)
+target_link_libraries(SystemDefaultsTest PRIVATE
+    Qt6::Core
+    Qt6::Test
+)
+
+add_executable(LockAppearanceTest
+    LockAppearanceTest.cpp
+    ../src/common/LockAppearance.cpp
+    ../src/common/LockAppearance.h
+)
+target_include_directories(LockAppearanceTest PRIVATE
+    ../src/common
+    ${CMAKE_BINARY_DIR}/src/common
+)
+add_test(NAME LockAppearance COMMAND LockAppearanceTest)
+target_link_libraries(LockAppearanceTest PRIVATE
+    Qt6::Core
+    Qt6::DBus
+    Qt6::Gui
+    Qt6::Test
+)
+
+add_executable(LockScaleTest
+    LockScaleTest.cpp
+    ../src/common/LockScale.cpp
+    ../src/common/LockScale.h
+)
+target_include_directories(LockScaleTest PRIVATE
+    ../src/common
+)
+add_test(NAME LockScale COMMAND LockScaleTest)
+target_link_libraries(LockScaleTest PRIVATE
+    Qt6::Core
+    Qt6::Test
+    X11
+    Xrandr
+)
+
+add_executable(VirtualKeyboardTest
+    VirtualKeyboardTest.cpp
+    ../src/lock-classic/widgets/virtualkbinstance.cpp
+    ../src/lock-classic/widgets/virtualkbinstance.h
+)
+add_test(NAME VirtualKeyboard COMMAND VirtualKeyboardTest -platform offscreen)
+target_link_libraries(VirtualKeyboardTest PRIVATE
+    Qt6::Widgets
+    Qt6::Test
+    PkgConfig::TEST_DTK2WIDGET
+)
+
+add_executable(MultiScreenManagerTest
+    MultiScreenManagerTest.cpp
+    ../src/lock-classic/global_util/multiscreenmanager.cpp
+    ../src/lock-classic/global_util/multiscreenmanager.h
+)
+target_include_directories(MultiScreenManagerTest PRIVATE
+    ../src/lock-classic/global_util
+)
+add_test(NAME MultiScreenManager
+    COMMAND MultiScreenManagerTest -platform offscreen)
+target_link_libraries(MultiScreenManagerTest PRIVATE
+    Qt6::Widgets
+    Qt6::Test
+)
+
+add_executable(GeneralSettingTest
+    general_setting_test.cc
+    ../src/system/general_setting.cc
+)
+target_include_directories(GeneralSettingTest PRIVATE ../src/system)
+target_link_libraries(GeneralSettingTest PRIVATE Qt6::Core Qt6::Test)
+add_test(NAME GeneralSetting COMMAND GeneralSettingTest)
 
 # A private helper fixture exercises Auth's actual socket protocol without PAM.
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/auth-transition")
@@ -139,11 +96,11 @@ add_executable(AuthTransitionTest
     ../src/auth/AuthPrompt.cpp
     ../src/common/SafeDataStream.cpp)
 set_target_properties(AuthTransitionTest PROPERTIES
-    OUTPUT_NAME gxdm-helper
+    OUTPUT_NAME gxde-lock-auth-helper
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/auth-transition")
 target_include_directories(AuthTransitionTest BEFORE PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/auth-transition" ../src/auth ../src/common)
 target_link_libraries(AuthTransitionTest PRIVATE
-    Qt${QT_MAJOR_VERSION}::Qml Qt${QT_MAJOR_VERSION}::Network Qt${QT_MAJOR_VERSION}::Test)
+    Qt6::Qml Qt6::Network Qt6::Test)
 add_test(NAME AuthTransition COMMAND AuthTransitionTest)
 set_tests_properties(AuthTransition PROPERTIES TIMEOUT 20)

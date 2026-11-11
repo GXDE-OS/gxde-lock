@@ -1,4 +1,4 @@
-Source: gxde-display-manager-se
+Source: gxde-lock
 Section: x11
 Priority: optional
 Maintainer: CharOfString <root@charofstring.cc>
@@ -12,43 +12,35 @@ Build-Depends: debhelper-compat (= 13),
                qt6-svg-dev,
                qt6-wayland-dev,
                qt6-wayland-private-dev,
-               qt6-l10n-tools,
                qml6-module-qtquick-window,
                qml6-module-qtquick-virtualkeyboard,
                qt6-virtualkeyboard-plugin,
                libdtk2widget6-dev,
                libdtk6core-dev,
                libdtk6log-dev,
-               libglib2.0-dev,
                libgsettings-qt6-dev,
                liblayershellqtinterface-dev,
                libpam0g-dev,
                libsystemd-dev,
                libx11-dev,
-               libxau-dev,
-               libxcb1-dev,
-               libxcb-xkb-dev,
                libxcursor-dev,
                libxext-dev,
                libxfixes-dev,
                libxi-dev,
-               libxkbcommon-dev,
                libxrandr-dev,
                libxtst-dev,
                qt6-tools-dev,
                qt6-tools-dev-tools,
-               libx11-xcb-dev,
                systemd-dev,
                wayland-protocols
 Standards-Version: 4.7.0
 Rules-Requires-Root: no
-Homepage: https://github.com/GXDE-OS/gxde-display-manager
+Homepage: https://github.com/GXDE-OS/gxde-lock
 
-Package: gxdm
+Package: gxde-lock
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         adduser,
          dbus,
          qml6-module-qtquick,
          qml6-module-qtquick-controls,
@@ -58,16 +50,11 @@ Depends: ${shlibs:Depends},
          qml6-module-qtquick-window,
          qml6-module-qtquick-virtualkeyboard,
          qt6-virtualkeyboard-plugin,
-         qml6-module-qt-labs-folderlistmodel,
          qml6-module-qtqml-workerscript,
-         debconf (>= 0.5) | debconf-2.0,
          layer-shell-qt,
-         x11-common,
-         xauth,
-         xkb-data,
-         xserver-xorg | xserver,
 Recommends: libpam-systemd
-Provides: x-display-manager
-Description: GXDE Display Manager
- GXDE Display Manager (GXDM) is a fork of SDDM that is specially designed for
- GXDE OS, aiming to provide an out-of-box login manager + greeter experience.
+Description: GXDE lock screen for X11 and Wayland
+ gxde-lock is the in-session screen locker of GXDE OS, split out of the GXDE
+ Display Manager. It provides a classic DTK widget lock screen and a modern
+ Qt Quick one, both working on X11 and on Wayland (ext-session-lock-v1 or
+ LayerShellQt), with PAM password and fingerprint unlock.

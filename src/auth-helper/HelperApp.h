@@ -1,0 +1,61 @@
+/*
+ * Main authentication application class
+ * Copyright (C) 2013 Martin Bříza <mbriza@redhat.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
+
+#ifndef Auth_H
+#define Auth_H
+
+#include <QtCore/QCoreApplication>
+
+#include "AuthMessages.h"
+
+class QLocalSocket;
+
+namespace SDDM {
+    class Backend;
+    // Authentication-only PAM helper: verifies a user and reports the result
+    // to the locker over a local socket, without opening a session.
+    class HelperApp : public QCoreApplication
+    {
+        Q_OBJECT
+    public:
+        HelperApp(int& argc, char** argv);
+
+        const QString &user() const;
+
+    public slots:
+        Request request(const Request &request);
+        void info(const QString &message, Auth::Info type);
+        void error(const QString &message, Auth::Error type);
+
+    private slots:
+        void setUp();
+        void doAuth();
+
+    private:
+        void authenticated(const QString &user);
+
+        qint64 m_id { -1 };
+        Backend *m_backend { nullptr };
+        QLocalSocket *m_socket { nullptr };
+        QString m_user { };
+    };
+}
+
+#endif // Auth_H

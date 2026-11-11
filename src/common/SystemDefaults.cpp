@@ -3,7 +3,7 @@
 #include <QFile>
 #include <QSettings>
 
-namespace GxdmSystemDefaults {
+namespace LockSystemDefaults {
 
 QString operatingSystemId(const QString &osReleasePath)
 {
@@ -41,4 +41,4 @@ QString initialSessionDesktopFile(const QString &rememberedSession,
     return defaultSessionDesktopFile(osReleasePath);
 }
 
-} // namespace GxdmSystemDefaults
+} // namespace LockSystemDefaults

@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = "configure" ]; then
+    # Pick up the system bus policy of gxde-lock-system.
+    invoke-rc.d dbus reload || true
+fi
+
+#DEBHELPER#
+
+exit 0

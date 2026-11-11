@@ -37,8 +37,8 @@ namespace lock {
 
 LockStylePaths LockStyleResolver::DefaultPaths() {
   LockStylePaths paths;
-  paths.gxdmConfig = QStringLiteral(CONFIG_FILE);
-  paths.omgConfig = QStringLiteral("/etc/gxdm/OMG.conf");
+  paths.configFile = QStringLiteral(CONFIG_FILE);
+  paths.omgConfig = QStringLiteral(OMG_CONFIG_FILE);
   paths.binDir = QCoreApplication::applicationDirPath();
   return paths;
 }
@@ -46,10 +46,10 @@ LockStylePaths LockStyleResolver::DefaultPaths() {
 LockStyle LockStyleResolver::Resolve(const LockStylePaths& paths) {
   LockStyle style = LockStyle::kModern;
 
-  const QString gxdm_value =
-      ReadSetting(paths.gxdmConfig, QStringLiteral("General"),
+  const QString config_value =
+      ReadSetting(paths.configFile, QStringLiteral("General"),
                   QStringLiteral("LockScreenStyle"));
-  if (!ParseStyleName(gxdm_value, &style)) {
+  if (!ParseStyleName(config_value, &style)) {
     const QString omg_value =
         ReadSetting(paths.omgConfig, QStringLiteral("NextFeatReq"),
                     QStringLiteral("SwitchLkScrStyle"));
@@ -66,11 +66,11 @@ LockStyle LockStyleResolver::Resolve(const LockStylePaths& paths) {
   return style;
 }
 
-LockStyle LockStyleResolver::ResolveFromFiles(const QString& gxdmConfig,
+LockStyle LockStyleResolver::ResolveFromFiles(const QString& configFile,
                                               const QString& omgConfig,
                                               const QString& binDir) {
   LockStylePaths paths;
-  paths.gxdmConfig = gxdmConfig;
+  paths.configFile = configFile;
   paths.omgConfig = omgConfig;
   paths.binDir = binDir;
   return Resolve(paths);
@@ -89,10 +89,10 @@ QString LockStyleResolver::StyleName(LockStyle style) {
 QString LockStyleResolver::ExecutableName(LockStyle style) {
   switch (style) {
     case LockStyle::kModern:
-      return QStringLiteral("gxdm-lock-neo");
+      return QStringLiteral("gxde-lock-neo");
     case LockStyle::kClassic:
     default:
-      return QStringLiteral("gxdm-lock-classic");
+      return QStringLiteral("gxde-lock-classic");
   }
 }
 

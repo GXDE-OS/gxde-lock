@@ -15,8 +15,8 @@
  * this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef GXDM_COMMON_FINGERPRINTPROBE_H_
-#define GXDM_COMMON_FINGERPRINTPROBE_H_
+#ifndef GXDE_LOCK_COMMON_FINGERPRINTPROBE_H_
+#define GXDE_LOCK_COMMON_FINGERPRINTPROBE_H_
 
 #include <QString>
 
@@ -26,7 +26,7 @@ class QObject;
 
 namespace gxde {
 
-// Asks whether `user` can log in by fingerprint: the gxdm-fingerprint PAM
+// Asks whether `user` can log in by fingerprint: the gxde-lock-fingerprint PAM
 // service is installed, fprintd (system bus) has a default reader, and the
 // user has enrolled fingers. `done` runs once, asynchronously, in `context`'s
 // thread, unless `context` is destroyed first. fprintd is D-Bus activated;
@@ -36,4 +36,4 @@ void ProbeEnrolledFingers(const QString& user, QObject* context,
 
 }  // namespace gxde
 
-#endif  // GXDM_COMMON_FINGERPRINTPROBE_H_
+#endif  // GXDE_LOCK_COMMON_FINGERPRINTPROBE_H_

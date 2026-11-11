@@ -34,24 +34,24 @@ QString SystemDefaultsTest::writeOsRelease(const QByteArray &contents)
 void SystemDefaultsTest::selectsDeepinOnGxde()
 {
     const QString path = writeOsRelease("NAME=GXDE\nID=GXDE\n");
-    QCOMPARE(GxdmSystemDefaults::operatingSystemId(path), QStringLiteral("GXDE"));
-    QVERIFY(GxdmSystemDefaults::isGxdeOperatingSystem(path));
-    QCOMPARE(GxdmSystemDefaults::defaultSessionDesktopFile(path),
+    QCOMPARE(LockSystemDefaults::operatingSystemId(path), QStringLiteral("GXDE"));
+    QVERIFY(LockSystemDefaults::isGxdeOperatingSystem(path));
+    QCOMPARE(LockSystemDefaults::defaultSessionDesktopFile(path),
         QStringLiteral("deepin.desktop"));
 }
 
 void SystemDefaultsTest::matchesGxdeCaseInsensitively()
 {
     const QString path = writeOsRelease("ID=gXdE\n");
-    QVERIFY(GxdmSystemDefaults::isGxdeOperatingSystem(path));
-    QCOMPARE(GxdmSystemDefaults::defaultSessionDesktopFile(path),
+    QVERIFY(LockSystemDefaults::isGxdeOperatingSystem(path));
+    QCOMPARE(LockSystemDefaults::defaultSessionDesktopFile(path),
         QStringLiteral("deepin.desktop"));
 }
 
 void SystemDefaultsTest::keepsRememberedSessionOnGxde()
 {
     const QString path = writeOsRelease("ID=GXDE\n");
-    QCOMPARE(GxdmSystemDefaults::initialSessionDesktopFile(
+    QCOMPARE(LockSystemDefaults::initialSessionDesktopFile(
                  QStringLiteral("gxde-wlcom.desktop"), path),
         QStringLiteral("gxde-wlcom.desktop"));
 }
@@ -59,8 +59,8 @@ void SystemDefaultsTest::keepsRememberedSessionOnGxde()
 void SystemDefaultsTest::leavesOtherSystemsUnspecified()
 {
     const QString path = writeOsRelease("NAME=Debian GNU/Linux\nID=debian\n");
-    QVERIFY(!GxdmSystemDefaults::isGxdeOperatingSystem(path));
-    QCOMPARE(GxdmSystemDefaults::defaultSessionDesktopFile(path), QString());
+    QVERIFY(!LockSystemDefaults::isGxdeOperatingSystem(path));
+    QCOMPARE(LockSystemDefaults::defaultSessionDesktopFile(path), QString());
 }
 
 QTEST_MAIN(SystemDefaultsTest)

@@ -1,0 +1,8 @@
+#%PAM-1.0
+# gxde-lock only authenticates the user of a running session.
+
+auth        include     login
+#auth       optional    pam_gnome_keyring.so
+#auth       optional    pam_kwallet5.so
+
+account     include     login

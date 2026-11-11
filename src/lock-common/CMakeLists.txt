@@ -1,89 +1,88 @@
-# QML-facing lock facade shared by gxdm-lock-neo. This directory is added as a
-# subdirectory of src/greeter-classic so it inherits the classic greeter's
+# QML-facing lock facade shared by gxde-lock-neo. This directory is added as a
+# subdirectory of src/lock-classic so it inherits the classic locker's
 # dependency checks, Qt porting guards and shared source variables.
 #
 # The legacy widget locker keeps compiling its own copies of these sources; the
 # QML locker links the static libraries defined here so both frontends share
 # exactly the same authentication, user enumeration and D-Bus behaviour.
 
-set(GXDM_CLASSIC_DIR "${GXDM_REPO_ROOT}/src/greeter-classic")
+set(LOCK_CLASSIC_DIR "${LOCK_REPO_ROOT}/src/lock-classic")
 
-# NEO_VENDOR_SOURCES/NEO_VENDOR_HEADERS are relative to src/greeter-classic.
+# NEO_VENDOR_SOURCES/NEO_VENDOR_HEADERS are relative to src/lock-classic.
 # Make them absolute because this CMakeLists lives in a sibling directory.
-set(GXDM_LOCK_VENDOR_SOURCES)
+set(LOCK_VENDOR_SOURCES)
 foreach(source ${NEO_VENDOR_SOURCES})
-    list(APPEND GXDM_LOCK_VENDOR_SOURCES "${GXDM_CLASSIC_DIR}/${source}")
+    list(APPEND LOCK_VENDOR_SOURCES "${LOCK_CLASSIC_DIR}/${source}")
 endforeach()
-set(GXDM_LOCK_VENDOR_HEADERS)
+set(LOCK_VENDOR_HEADERS)
 foreach(header ${NEO_VENDOR_HEADERS})
-    list(APPEND GXDM_LOCK_VENDOR_HEADERS "${GXDM_CLASSIC_DIR}/${header}")
+    list(APPEND LOCK_VENDOR_HEADERS "${LOCK_CLASSIC_DIR}/${header}")
 endforeach()
 
-set(GXDM_LOCK_BACKEND_SOURCES
-    "${GXDM_CLASSIC_DIR}/session_widgets/authinterface.cpp"
-    "${GXDM_CLASSIC_DIR}/session_widgets/sessionbasemodel.cpp"
-    "${GXDM_CLASSIC_DIR}/session_widgets/userinfo.cpp"
-    "${GXDM_CLASSIC_DIR}/lock/fingerprintunlock.cpp"
-    "${GXDM_CLASSIC_DIR}/lock/lockworker.cpp"
-    "${GXDM_CLASSIC_DIR}/lock/lockshortcutmanager.cpp"
-    "${GXDM_CLASSIC_DIR}/lock/dbus/dbuslockagent.cpp"
-    "${GXDM_CLASSIC_DIR}/lock/dbus/dbuslockfrontservice.cpp"
-    "${GXDM_CLASSIC_DIR}/lock/freedesktopscreensaver.cpp"
-    "${GXDM_CLASSIC_DIR}/lock/waylandsessionlock.cpp"
-    "${GXDM_REPO_ROOT}/src/common/GreeterAppearance.cpp"
-    "${GXDM_REPO_ROOT}/src/common/FingerprintProbe.cpp"
-    "${GXDM_REPO_ROOT}/src/common/FingerprintSession.cpp"
-    ${GXDM_LOCK_VENDOR_SOURCES}
-    ${GXDM_AUTH_FILES}
+set(LOCK_BACKEND_SOURCES
+    "${LOCK_CLASSIC_DIR}/session_widgets/authinterface.cpp"
+    "${LOCK_CLASSIC_DIR}/session_widgets/sessionbasemodel.cpp"
+    "${LOCK_CLASSIC_DIR}/session_widgets/userinfo.cpp"
+    "${LOCK_CLASSIC_DIR}/lock/fingerprintunlock.cpp"
+    "${LOCK_CLASSIC_DIR}/lock/lockworker.cpp"
+    "${LOCK_CLASSIC_DIR}/lock/lockshortcutmanager.cpp"
+    "${LOCK_CLASSIC_DIR}/lock/dbus/dbuslockagent.cpp"
+    "${LOCK_CLASSIC_DIR}/lock/dbus/dbuslockfrontservice.cpp"
+    "${LOCK_CLASSIC_DIR}/lock/freedesktopscreensaver.cpp"
+    "${LOCK_CLASSIC_DIR}/lock/waylandsessionlock.cpp"
+    "${LOCK_REPO_ROOT}/src/common/LockAppearance.cpp"
+    "${LOCK_REPO_ROOT}/src/common/FingerprintProbe.cpp"
+    "${LOCK_REPO_ROOT}/src/common/FingerprintSession.cpp"
+    ${LOCK_VENDOR_SOURCES}
+    ${LOCK_AUTH_FILES}
 )
 
-set(GXDM_LOCK_BACKEND_HEADERS
-    "${GXDM_CLASSIC_DIR}/session_widgets/authinterface.h"
-    "${GXDM_CLASSIC_DIR}/session_widgets/sessionbasemodel.h"
-    "${GXDM_CLASSIC_DIR}/session_widgets/userinfo.h"
-    "${GXDM_CLASSIC_DIR}/lock/fingerprintunlock.h"
-    "${GXDM_CLASSIC_DIR}/lock/lockworker.h"
-    "${GXDM_CLASSIC_DIR}/lock/lockshortcutmanager.h"
-    "${GXDM_CLASSIC_DIR}/lock/dbus/dbuslockagent.h"
-    "${GXDM_CLASSIC_DIR}/lock/dbus/dbuslockfrontservice.h"
-    "${GXDM_CLASSIC_DIR}/lock/freedesktopscreensaver.h"
-    "${GXDM_CLASSIC_DIR}/lock/waylandsessionlock.h"
-    "${GXDM_REPO_ROOT}/src/common/GreeterAppearance.h"
-    "${GXDM_REPO_ROOT}/src/common/FingerprintProbe.h"
-    "${GXDM_REPO_ROOT}/src/common/FingerprintSession.h"
-    ${GXDM_LOCK_VENDOR_HEADERS}
+set(LOCK_BACKEND_HEADERS
+    "${LOCK_CLASSIC_DIR}/session_widgets/authinterface.h"
+    "${LOCK_CLASSIC_DIR}/session_widgets/sessionbasemodel.h"
+    "${LOCK_CLASSIC_DIR}/session_widgets/userinfo.h"
+    "${LOCK_CLASSIC_DIR}/lock/fingerprintunlock.h"
+    "${LOCK_CLASSIC_DIR}/lock/lockworker.h"
+    "${LOCK_CLASSIC_DIR}/lock/lockshortcutmanager.h"
+    "${LOCK_CLASSIC_DIR}/lock/dbus/dbuslockagent.h"
+    "${LOCK_CLASSIC_DIR}/lock/dbus/dbuslockfrontservice.h"
+    "${LOCK_CLASSIC_DIR}/lock/freedesktopscreensaver.h"
+    "${LOCK_CLASSIC_DIR}/lock/waylandsessionlock.h"
+    "${LOCK_REPO_ROOT}/src/common/LockAppearance.h"
+    "${LOCK_REPO_ROOT}/src/common/FingerprintProbe.h"
+    "${LOCK_REPO_ROOT}/src/common/FingerprintSession.h"
+    ${LOCK_VENDOR_HEADERS}
 )
 
-add_library(gxdm-lock-backend STATIC
-    ${GXDM_LOCK_BACKEND_SOURCES}
-    ${GXDM_LOCK_BACKEND_HEADERS}
+add_library(gxde-lock-backend STATIC
+    ${LOCK_BACKEND_SOURCES}
+    ${LOCK_BACKEND_HEADERS}
 )
 
-target_include_directories(gxdm-lock-backend PUBLIC
+target_include_directories(gxde-lock-backend PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}"
-    "${GXDM_CLASSIC_DIR}"
-    "${GXDM_CLASSIC_DIR}/global_util"
-    "${GXDM_CLASSIC_DIR}/global_util/dbus"
-    "${GXDM_CLASSIC_DIR}/session_widgets"
-    "${GXDM_CLASSIC_DIR}/lock"
-    "${GXDM_CLASSIC_DIR}/lock/dbus"
-    "${GXDM_CLASSIC_DIR}/vendor"
-    "${GXDM_REPO_ROOT}/src/auth"
-    "${GXDM_REPO_ROOT}/src/common"
-    "${GXDM_REPO_ROOT}/src/daemon"
-    "${GXDM_CONSTANTS_INCLUDE_DIR}"
-    "${GXDM_CLASSIC_BINARY_DIR}"
+    "${LOCK_CLASSIC_DIR}"
+    "${LOCK_CLASSIC_DIR}/global_util"
+    "${LOCK_CLASSIC_DIR}/global_util/dbus"
+    "${LOCK_CLASSIC_DIR}/session_widgets"
+    "${LOCK_CLASSIC_DIR}/lock"
+    "${LOCK_CLASSIC_DIR}/lock/dbus"
+    "${LOCK_CLASSIC_DIR}/vendor"
+    "${LOCK_REPO_ROOT}/src/auth"
+    "${LOCK_REPO_ROOT}/src/common"
+    "${LOCK_CONSTANTS_INCLUDE_DIR}"
+    "${LOCK_CLASSIC_BINARY_DIR}"
 )
 
-target_link_libraries(gxdm-lock-backend PUBLIC
+target_link_libraries(gxde-lock-backend PUBLIC
     ${NEO_COMMON_LIBS}
-    gxdm-ext-session-lock-protocol
+    gxde-lock-ext-session-lock-protocol
     Qt6::Qml
     Qt6::WaylandClientPrivate
 )
 
 # QML-safe facade, user carousel and style resolution.
-add_library(gxdm-lock-common STATIC
+add_library(gxde-lock-common STATIC
     lockbackend.cpp
     lockbackend.h
     userlistmodel.cpp
@@ -100,12 +99,12 @@ add_library(gxdm-lock-common STATIC
     systemvolume.h
 )
 
-target_include_directories(gxdm-lock-common PUBLIC
+target_include_directories(gxde-lock-common PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-target_link_libraries(gxdm-lock-common PUBLIC
-    gxdm-lock-backend
+target_link_libraries(gxde-lock-common PUBLIC
+    gxde-lock-backend
     Qt6::Core Qt6::Gui Qt6::DBus Qt6::Network
 )
 

@@ -15,8 +15,8 @@
  * this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef GXDM_COMMON_FINGERPRINTSESSION_H_
-#define GXDM_COMMON_FINGERPRINTSESSION_H_
+#ifndef GXDE_LOCK_COMMON_FINGERPRINTSESSION_H_
+#define GXDE_LOCK_COMMON_FINGERPRINTSESSION_H_
 
 #include <QElapsedTimer>
 #include <QObject>
@@ -25,10 +25,10 @@
 namespace gxde {
 
 // Listens for one user's finger alongside the password: the lock screen
-// (gxde::lock::FingerprintUnlock) and the greeter (through the daemon).
+// (gxde::lock::FingerprintUnlock).
 //
 // Subclasses supply the probe and the runs. A run is one pass of the
-// gxdm-fingerprint PAM service (pam_fprintd), which ends in one of three ways,
+// gxde-lock-fingerprint PAM service (pam_fprintd), which ends in one of three ways,
 // told apart by timing:
 //  - a match;
 //  - its tries are used up: it fails right after the last rejection. Nothing
@@ -100,4 +100,4 @@ class FingerprintSession : public QObject {
 
 }  // namespace gxde
 
-#endif  // GXDM_COMMON_FINGERPRINTSESSION_H_
+#endif  // GXDE_LOCK_COMMON_FINGERPRINTSESSION_H_

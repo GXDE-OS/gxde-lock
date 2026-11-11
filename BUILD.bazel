@@ -3,30 +3,23 @@ load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 package(default_visibility = ["//visibility:public"])
 
-# Main binaries goes to /usr/bin.
+# Lock screens go to /usr/bin.
 pkg_files(
     name = "bin_pkg",
     srcs = [
-        "//src/daemon:gxdm",
-        "//src/greeter:gxdm-greeter-qt6",
-        # Default greeter
-        "//src/greeter-classic:gxdm-greeter-classic",
-        "//src/greeter-neo:gxdm-greeter-neo",
-        # In-session lock screen (PAM-direct, no dde-daemon)
-        "//src/greeter-classic:gxdm-lock-classic",
-        "//src/lock-neo:gxdm-lock-neo",
+        "//src/lock-classic:gxde-lock-classic",
+        "//src/lock-neo:gxde-lock-neo",
     ],
     attributes = pkg_attributes(mode = "0755"),
     prefix = "/usr/bin",
 )
 
-# Helper binaries goes to /usr/libexec.
+# Helper binaries go to /usr/libexec.
 pkg_files(
     name = "libexec_pkg",
     srcs = [
-        "//src/helper:gxdm-helper",
-        "//src/helper:gxdm-helper-start-wayland",
-        "//src/helper:gxdm-helper-start-x11user",
+        "//src/auth-helper:gxde-lock-auth-helper",
+        "//src/system:gxde-lock-system",
     ],
     attributes = pkg_attributes(mode = "0755"),
     prefix = "/usr/libexec",
@@ -34,21 +27,13 @@ pkg_files(
 
 # Full deployable install tree, extracted at / on the target.
 pkg_tar(
-    name = "gxdm-dist",
+    name = "gxde-lock-dist",
     srcs = [
         ":bin_pkg",
         ":libexec_pkg",
-        "//components:components_pkg",
-        "//data:flags_pkg",
-        "//data:faces_pkg",
-        "//data:scripts_pkg",
-        "//data:session_integration_pkg",
-        "//data:themes_pkg",
-        "//data:translations_pkg",
         "//data:dbus_pkg",
-        "//services:systemd_pkg",
-        "//services:sysusers_pkg",
-        "//services:tmpfiles_pkg",
+        "//data:omg_pkg",
+        "//data:session_integration_pkg",
         "//services:pam_pkg",
     ],
     extension = "tar",

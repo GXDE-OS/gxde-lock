@@ -838,8 +838,8 @@ build/*
 # ---> Debian packaging build artifacts
 /debian/.debhelper/
 /debian/.bazel-root/
-/debian/gxdm/
-/debian/gxdm-dbgsym/
+/debian/gxde-lock/
+/debian/gxde-lock-dbgsym/
 /debian/files
 /debian/*.debhelper
 /debian/*.substvars

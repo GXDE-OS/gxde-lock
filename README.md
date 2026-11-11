@@ -1,343 +1,203 @@
 ![HEADER](./docs/img/header.png)
 
-![CONTRIBUTORS](https://img.shields.io/github/contributors/GXDE-OS/gxde-display-manager.svg?style=plastic)
-![ISSUES](https://img.shields.io/github/issues/GXDE-OS/gxde-display-manager.svg?style=plastic)
+![CONTRIBUTORS](https://img.shields.io/github/contributors/GXDE-OS/gxde-lock.svg?style=plastic)
+![ISSUES](https://img.shields.io/github/issues/GXDE-OS/gxde-lock.svg?style=plastic)
 ![LICENSE](https://img.shields.io/badge/license-GPLv3-blue)
 ![](https://img.shields.io/badge/made_with-love-red)
 
 
-<!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <!--
-  <a href="https://github.com/othneildrew/Best-README-Template">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
-  </a>
-  -->
-
-  <h3 align="center">GXDE Display Manager</h3>
+  <h3 align="center">GXDE Lock</h3>
 
   <p align="center">
-    An out-of-box display manager, built specifically for GXDE OS.
+    The in-session lock screen of GXDE OS, for X11 and Wayland.
     <br />
-    <a href="https://gitee.com/GXDE-OS/gxde-display-manager/wikis"><strong>Explore WIKI »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/GXDE-OS/gxde-display-manager/releases">Explore previous releases</a>
+    <a href="https://gitee.com/GXDE-OS/gxde-lock/issues">Fire up an issue</a>
     &middot;
-    <a href="https://gitee.com/GXDE-OS/gxde-display-manager/issues">Fire up an issue</a>
-    &middot;
-    <a href="https://gitee.com/GXDE-OS/gxde-display-manager/issues">Request features</a>
+    <a href="https://gitee.com/GXDE-OS/gxde-lock/issues">Request features</a>
   </p>
 </div>
 
+[中文](./README.zh.md)
 
-<!-- ABOUT THE PROJECT -->
 ## About the Project
-GXDE Display Manager (`GXDM`) is a fork of `SDDM` and is build specifically for GXDE OS. It aims to bring an out-of-box experience of logining and greeter.
+`gxde-lock` is the screen locker of the [GXDE Display Manager](https://github.com/GXDE-OS/gxde-display-manager)
+(`GXDM`, an SDDM fork), split out on its own. The display manager parts (daemon,
+greeters, session helpers, themes) are gone; what is left is everything needed
+to lock and unlock a running session:
 
-Currently, `GXDM` uses a Wayland greeter by default. It prefers `gxde-wlcom` and falls back to `LabWC`, `Sway` or `Weston` when it is unavailable. The greeter itself is from Deepin `session-ui` from the DDE 15 era, and it is fully adapted to Wayland and Qt6.
+| Component | Installed as | Source | Purpose |
+| --- | --- | --- | --- |
+| Classic lock screen | `/usr/bin/gxde-lock-classic` | `src/lock-classic` | DTK widget lock screen. Also the stable autostart and D-Bus entry point; hands off to the modern lock screen when that style is selected. |
+| Modern lock screen | `/usr/bin/gxde-lock-neo` | `src/lock-neo` | Qt Quick lock screen backed by `src/lock-common`. |
+| Auth helper | `<libexec>/gxde-lock-auth-helper` | `src/auth-helper` | Runs the `gxde-lock` PAM stack as the locked user; never opens a session. |
+| Root helper | `<libexec>/gxde-lock-system` | `src/system` | System-bus service, activated on demand, that stores the settings shared by all users and performs power actions. |
 
-
+Both lock screens run on X11 (full-screen windows with keyboard grabs) and on
+Wayland (`ext-session-lock-v1` when the compositor supports it, LayerShellQt
+`zwlr_layer_shell_v1` otherwise). Both unlock with a password or, when
+`fprintd` has a reader and enrolled fingers, a fingerprint.
 
 ### Toolchains
 #### Build Dependencies
-* REQUIRED
-  * Bazel/Bzlmod或CMake 3.16+
-  * PAM, X11, XCB, XCursor, XFixes, XInput, XKB, XRandR, XTest
-  * A compiler that is compactiable with C20 standard.
-  * **Qt6**: Core, DBus, Gui, Widgets, Network, Qml, Quick, Svg, Xml, WaylandClient
-  * **DTK**: DTK2Widget-Qt6, DTK6 Core, DTK6 DLog
-  * **GSettings**: gsettings-qt6 development files
-  * **Wayland lock screen**: Qt WaylandClient and LayerShellQt development files
-* Optional
-  * **Debian packaging**: Debhelper, dpkg-buildpackage
+* CMake 3.21+ (or Bazel/Bzlmod on Debian hosts) and a C++20 compiler
+* PAM, X11, Xcursor, Xfixes, XInput, XRandR, XTest, Xext
+* **Qt 6.5+**: Core, DBus, Gui, Widgets, Network, Qml, Quick, Svg, Xml, WaylandClient
+* **DTK**: DTK2Widget-Qt6, DTK6 Core, DTK6 DLog
+* gsettings-qt6, LayerShellQt, wayland-protocols, wayland-scanner
 
-***NOTE**: You may refer to [`debian/control`](./debian/control) for full Debian dependencies.*
+***NOTE**: [`debian/control`](./debian/control) has the full Debian list.*
 
 #### Runtime
-* PAM
-* logind
-* D-Bus
+* PAM, logind (or elogind), D-Bus
 * AccountsService
-* XKB, Xcursor
-* Wayland/X11 environment
-* DTK and Qt6 libraries mentioned above
-* gsettings-qt6
-* Wayland locking uses `ext-session-lock-v1` when the compositor supports it;
-  LayerShellQt/`zwlr_layer_shell_v1` remains the compatibility fallback
+* An X11 session, or a Wayland compositor with `ext-session-lock-v1` or `zwlr_layer_shell_v1`
+* Qt Quick, Qt Quick Controls/Layouts/Effects and Qt Virtual Keyboard QML modules for `gxde-lock-neo`
 
-
-<!-- GETTING STARTED -->
 ## Getting Started
-### Prerequisite
-Please install all the depencies above before getting started.
+### Building From Source (CMake)
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+cmake --build build -j4
+DESTDIR="$PWD/build/stage" cmake --install build   # inspect first
+sudo cmake --install build
+```
 
-GXDM supports both Bazel and CMake. You should ensure Bazel is installed if you really want to build it with Bazel. The guide for installing Bazel could be found [here](https://bazel.build/install).
+| Option | Default | Effect |
+| --- | --- | --- |
+| `BUILD_NEO_LOCK` | `ON` | Build `gxde-lock-neo`. |
+| `LOCK_BUILD_TESTS` | `OFF` | Build the lock backend tests (`LockStyle`, `LockBackend`, `LockMedia`, `LockServices`, `LockFingerprint`). |
+| `INSTALL_PAM_CONFIGURATION` | `ON` | Install `/etc/pam.d/gxde-lock` and `gxde-lock-fingerprint`. |
+| `ENABLE_JOURNALD` | `ON` | Log the auth helper to journald. |
+| `NO_SYSTEMD` / `USE_ELOGIND` | `OFF` | Build without systemd, or against elogind. |
 
 ### Building From Source (Bazel)
 ```bash
-$ bazel build --spawn_strategy=local //:gxdm-dist
+bazel build --spawn_strategy=local //:gxde-lock-dist
 ```
+The Bazel build uses the host Qt and DTK at Debian paths (see `MODULE.bazel`).
 
-The generated deployment archive is located at `bazel-bin/gxdm-dist.tar`.
-
-### Building From Source (CMake)
+### Packages
 ```bash
-$ cmake -S . -B build-cmake -DBUILD_WITH_QT6=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
-$ cmake --build build-cmake --parallel
+./build-deb -d          # Debian / GXDE OS
+cd arch && makepkg -si  # Arch Linux
 ```
 
-
-### Building a Debian Package
-You won't have to worry about CMake things for it is handled through`debian/rules`.
-
-```bash
-$ chmod a+x ./build-deb
-$ ./build-deb -d
-```
-
-The `.deb` package generated could be found on the parent of project root directory.
-
-If you need a cleanup after you're done, please run:
-```bash
-./build-deb -c
-```
-
-Please note that this also clears the artifacts (those `.deb` files) generated.
-
-
-<!-- USAGE EXAMPLES -->
 ## Usage
-GXDM's `.deb` package should allow you to choose your preferred display manager after GXDM is being installed.
+The package installs an XDG autostart entry, so the locker starts with the
+session (`gxde-lock-classic --daemon --auto-enroll`). It also registers:
 
-GXDM's usage is almost the same as SDDM, and here are some handy commands:
+* `org.freedesktop.ScreenSaver` and the Deepin `com.deepin.dde.lockFront`
+  names, so desktop "Lock Screen" actions reach it;
+* the Super+L shortcut through KGlobalAccel, unless something else owns it.
 
-### Manually Enable & Start
+Lock right away:
 ```bash
-$ sudo systemctl stop <其他正在使用的display manager服务名>.service
-$ sudo systemctl disable <其他正在使用的display manager服务名>.service
-$ sudo systemctl enable gxdm.service
-$ sudo systemctl start gxdm.service
+gxde-lock-classic                # or: gxde-lock-neo
 ```
 
-### Manually Stop & Disable
+Preview without locking (any password works, `Esc` quits):
 ```bash
-$ sudo systemctl stop gxdm.service
-$ sudo systemctl disable gxdm.service
-$ sudo systemctl enable <其他欲使用的display manager服务名>.service
-$ sudo systemctl start <其他欲使用的display manager服务名>.service
+gxde-lock-neo --test-mode
+gxde-lock-neo --test-mode --switch
 ```
 
-### Manually Restart
-```bash
-$ sudo systemctl restart gxdm.service
-```
-
-### Check Status
-```bash
-$ systemctl status gxdm.service --no-pager
-$ sudo journalctl -u gxdm.service -b --no-pager
-```
-
-### D-Bus API
-GXDM exposes lock-shortcut and global greeter appearance controls on the session bus. Applications should use this public endpoint:
-
-| Item | Value |
-| --- | --- |
-| Bus | Session bus |
-| Service | `top.gxde.DisplayManager` |
-| Object path | `/top/gxde/DisplayManager` |
-| Interface | `top.gxde.DisplayManager` |
-
-| Method | Description |
-| --- | --- |
-| `TryEnrollLkScr(bool enabled) -> bool` | Registers or withdraws the Super+L GXDM lock shortcut. An existing Super+L binding is never stolen. |
-| `UnregisterLkScr()` | Withdraws Super+L and stops automatic re-enrollment for the current locker process. |
-| `LkScrStat() -> bool` | Returns whether GXDM successfully owns the Super+L shortcut. |
-| `Show()` | Shows the GXDM lock screen. |
-| `SetCursor(string theme) -> bool` | Sets the global greeter cursor theme. The theme must already be installed. |
-| `SetWallpaperGXDEDefault() -> bool` | Restores the current GXDE default as the global greeter wallpaper. |
-| `SetWallpaperDDELockDefault() -> bool` | Uses the bundled DDE lock default background as the global greeter wallpaper. |
-| `SetWallpaper(string path) -> bool` | Sets a custom global greeter wallpaper from a local path or `file://` URL. |
-| `SetLockWallpaperOverride(string path) -> bool` | Sets the current user's lock-screen wallpaper override from a local path or `file://` URL. |
-| `ClearLockWallpaperOverride() -> bool` | Clears the current user's lock-screen wallpaper override. |
-| `LockWallpaperOverride() -> string` | Returns the current user's persisted lock-screen wallpaper override. |
-| `SetGreeterDisplayServer(string displayServer) -> bool` | Persists the greeter display server. Valid values are `wayland`, `x11`, and `x11-user`. |
-| `GreeterDisplayServer() -> string` | Returns the persisted greeter display server. |
-| `SetNeoGreeterEnabled(bool enabled) -> bool` | Enables the new QML greeter (default: true); false selects the classic greeter. |
-| `NeoGreeterEnabled() -> bool` | Returns the persisted greeter selection. |
-| `SetLockScreenStyle(string style) -> bool` | Persists the lock screen style (`classic` or `modern`) through the system daemon. Fails if the style's binary is not installed. |
-| `LockScreenStyle() -> string` | Returns the effective lock screen style. |
-
-The lock service attempts to register Super+L on all systems by default, and will abort when attempt fails.
-
-New greeter switch on the system bus:
-
-```sh
-busctl call top.gxde.DisplayManager /top/gxde/DisplayManager \
-  top.gxde.DisplayManager.System SetNeoGreeterEnabled b false
-busctl call top.gxde.DisplayManager /top/gxde/DisplayManager \
-  top.gxde.DisplayManager.System NeoGreeterEnabled
-```
-
-The switch is stored as `[General] EnableNeoGreeter` in `gxdm.conf` and takes effect on the next greeter start. Pass `true` to re-enable it. The daemon emits `NeoGreeterEnabledChanged(bool)` after saving successfully. Missing new greeter binaries fall back to the classic greeter. Preview with `gxdm-greeter-neo --test-mode`. Qt Virtual Keyboard requires both its QML module and input context plugin.
-
-### QML lock screen
-
-`gxdm-lock-neo` is a Qt Quick frontend for the in-session locker. It reuses
-GXDM's PAM authenticator, user enumeration, lock-shortcut enrollment and D-Bus
-surface, so existing desktop shortcuts, power menus and
-`org.freedesktop.ScreenSaver` callers keep working. On Wayland it uses
-`ext-session-lock-v1` when available and falls back to LayerShellQt; on X11 it
-creates a full-screen window and grabs the keyboard.
-
-The style is selected with `[General] LockScreenStyle` in `/etc/gxdm.conf`:
+### Lock screen style
+`[General] LockScreenStyle` in `/etc/gxde-lock.conf` picks the lock screen:
 
 ```ini
 [General]
 LockScreenStyle=modern
 ```
 
-`modern` (the default) starts `gxdm-lock-neo`; `classic` starts
-`gxdm-lock-classic`. If `gxdm-lock-neo` is not installed, `classic` is used. For compatibility, `[NextFeatReq] SwitchLkScrStyle` in
-`/etc/gxdm/OMG.conf` is used as a fallback when the `gxdm.conf` key is absent.
-The classic autostart and D-Bus service entries remain the stable entry point:
-when the modern style is configured and the binary is installed next to
-`gxdm-lock-classic`, the classic process execs the QML locker with the same
-arguments. If the QML binary is missing, the classic locker is used.
+`modern` (the default) runs `gxde-lock-neo`, `classic` runs `gxde-lock-classic`.
+When the key is absent, `[NextFeatReq] SwitchLkScrStyle` in
+`/etc/gxde-lock/OMG.conf` is used. A missing `gxde-lock-neo` always means
+classic. Switching at runtime through `SetLockScreenStyle` takes effect after
+the next unlock: the running locker releases its D-Bus names and execs the
+other one, so the session is never left unlocked.
 
-The style can also be switched at runtime from the session bus (or with the
-same method on `top.gxde.DisplayManager.System`):
+### D-Bus API
+Applications use the session bus:
 
-```sh
-busctl --user call top.gxde.DisplayManager /top/gxde/DisplayManager \
-  top.gxde.DisplayManager SetLockScreenStyle s modern
-```
+| Item | Value |
+| --- | --- |
+| Bus | Session bus |
+| Service | `top.gxde.Lock` |
+| Object path | `/top/gxde/Lock` |
+| Interface | `top.gxde.Lock` |
 
-The daemon writes `[General] LockScreenStyle` and emits
-`LockScreenStyleChanged(string)`. The running locker waits until the screen is
-unlocked, releases its D-Bus names and execs the other locker with `--daemon`,
-so the session is never left unlocked during the switch.
+| Method | Description |
+| --- | --- |
+| `TryEnrollLkScr(bool enabled) -> bool` | Registers or withdraws Super+L. An existing Super+L binding is never stolen. |
+| `UnregisterLkScr()` | Withdraws Super+L and stops automatic re-enrollment for this locker process. |
+| `LkScrStat() -> bool` | Whether gxde-lock owns Super+L. |
+| `Show()` | Locks the screen. |
+| `SetCursor(string theme) -> bool` | Sets the lock screen cursor theme for all users. The theme must be installed. |
+| `SetWallpaperGXDEDefault() -> bool` | Uses the GXDE default as the global lock wallpaper. |
+| `SetWallpaperDDELockDefault() -> bool` | Uses the bundled DDE lock background as the global lock wallpaper. |
+| `SetWallpaper(string path) -> bool` | Sets a custom global lock wallpaper from a local path or `file://` URL. |
+| `ClearWallpaper() -> bool` | Removes the global lock wallpaper. |
+| `SetLockWallpaperOverride(string path) -> bool` | Sets the current user's own lock wallpaper. |
+| `ClearLockWallpaperOverride() -> bool` | Clears the current user's lock wallpaper. |
+| `LockWallpaperOverride() -> string` | The current user's lock wallpaper, or an empty string. |
+| `SetLockScreenStyle(string style) -> bool` | Persists `classic` or `modern` for all users. Fails when that lock screen is not installed. |
+| `LockScreenStyle() -> string` | The effective lock screen style. |
 
-Build the QML locker with `-DBUILD_NEO_LOCK=ON` (default; requires
-`BUILD_CLASSIC_GREETER=ON`). Preview it without locking the session:
-
-```sh
-./build-cmake/src/greeter-classic/gxdm-lock-neo --test-mode
-./build-cmake/src/greeter-classic/gxdm-lock-neo --test-mode --switch
-```
-
-The preview accepts any password and exits with `Esc`. Production starts with
-`--daemon` (autostart/D-Bus) or immediately locks when started without it.
-Lock-backend tests are enabled with `-DLOCK_BUILD_TESTS=ON` and registered as
-`LockBackend` and `LockStyle` in CTest.
-
-
-**Note:** the greeter uses the global wallpaper only when one is explicitly configured (a non-empty `[Greeter] Wallpaper` in `state.conf`). When unset, the new greeter follows the current user's wallpaper chain so it matches the lock screen. The lock/user wallpaper priority is: the current user's `LockWallpaperOverride`, the current user's Deepin `GreeterBackground`/`BackgroundFile`, Deepin `DesktopBackgrounds` (the same source as the GSettings desktop wallpaper), AccountsService, GSettings desktop backgrounds, then the global greeter wallpaper/default. Every wallpaper setting refreshes the active greeter or lock screen immediately after it is persisted. Custom wallpapers and overrides must be recognized images no larger than 128 MiB. The global greeter wallpaper is copied under `~gxdm`. The user lock override is copied twice: `~/.local/share/gxdm/lock-wallpaper-override` for the in-session locker and `~gxdm/lock-wallpaper-override-<uid>` for the greeter (which can still read it when the user's home directory is not traversable, e.g. mode `0700`); neither depends on the original image remaining available. `SetGreeterDisplayServer` takes effect the next time the greeter display is created.
+Signals: `LkScrStatChanged(bool)`, `LockScreenStyleChanged(string)`.
 
 Examples:
-
 ```bash
-# Register Super+L
-busctl --user call top.gxde.DisplayManager \
-  /top/gxde/DisplayManager top.gxde.DisplayManager \
-  TryEnrollLkScr b true
-
-# Unregister Super+L
-busctl --user call top.gxde.DisplayManager \
-  /top/gxde/DisplayManager top.gxde.DisplayManager \
-  UnregisterLkScr
-
-# Query the Super+L state
-busctl --user call top.gxde.DisplayManager \
-  /top/gxde/DisplayManager top.gxde.DisplayManager \
-  LkScrStat
-
-# Set the greeter cursor theme
-busctl --user call top.gxde.DisplayManager \
-  /top/gxde/DisplayManager top.gxde.DisplayManager \
-  SetCursor s gxde
-
-# Set a custom greeter wallpaper
-busctl --user call top.gxde.DisplayManager \
-  /top/gxde/DisplayManager top.gxde.DisplayManager \
-  SetWallpaper s /absolute/path/to/wallpaper.jpg
-
-# Restore the GXDE default greeter wallpaper
-busctl --user call top.gxde.DisplayManager \
-  /top/gxde/DisplayManager top.gxde.DisplayManager \
-  SetWallpaperGXDEDefault
-
-# Override the lock-screen wallpaper
-busctl --user call top.gxde.DisplayManager \
-  /top/gxde/DisplayManager top.gxde.DisplayManager \
-  SetLockWallpaperOverride s /absolute/path/to/lock-wallpaper.jpg
-
-# Clear the lock-screen wallpaper override
-busctl --user call top.gxde.DisplayManager \
-  /top/gxde/DisplayManager top.gxde.DisplayManager \
-  ClearLockWallpaperOverride
-
-# Use the X11 greeter display server
-busctl --user call top.gxde.DisplayManager \
-  /top/gxde/DisplayManager top.gxde.DisplayManager \
-  SetGreeterDisplayServer s x11
-
-# Query the greeter display server
-busctl --user call top.gxde.DisplayManager \
-  /top/gxde/DisplayManager top.gxde.DisplayManager \
-  GreeterDisplayServer
+busctl --user call top.gxde.Lock /top/gxde/Lock top.gxde.Lock TryEnrollLkScr b true
+busctl --user call top.gxde.Lock /top/gxde/Lock top.gxde.Lock Show
+busctl --user call top.gxde.Lock /top/gxde/Lock top.gxde.Lock SetWallpaper s /path/to/image.jpg
+busctl --user call top.gxde.Lock /top/gxde/Lock top.gxde.Lock SetLockWallpaperOverride s /path/to/image.jpg
+busctl --user call top.gxde.Lock /top/gxde/Lock top.gxde.Lock SetLockScreenStyle s classic
 ```
 
-The GXDM daemon also owns the same service name on the system bus and exposes the internal `top.gxde.DisplayManager.System` interface. It persists global appearance values in `~gxdm/state.conf` and writes the greeter display server to `/etc/gxdm.conf`; global custom wallpapers are accepted as Unix file descriptors rather than caller-supplied paths. The session-bus interface stores user lock-screen overrides in the user's data directory and additionally forwards them to the system-bus interface so the greeter can read a copy from `~gxdm`. The system-bus interface is an implementation detail and should not be called directly by regular applications.
+Settings shared by every user (style, global wallpaper, cursor theme) need
+root, so the session interface forwards them to `gxde-lock-system`, which owns
+`top.gxde.Lock` on the **system** bus with the internal
+`top.gxde.Lock.System` interface. It writes `/etc/gxde-lock.conf` and
+`/var/lib/gxde-lock/state.conf`, copies custom wallpapers (passed as file
+descriptors, at most 128 MiB) into `/var/lib/gxde-lock`, and exits after a
+minute of inactivity. Do not call it directly.
 
+The wallpaper of a user's lock screen is, in order: the user's
+`LockWallpaperOverride` (`~/.local/share/gxde-lock/lock-wallpaper-override`),
+Deepin Accounts `GreeterBackground`/`BackgroundFile`/`DesktopBackgrounds`,
+AccountsService, the GSettings desktop background, then the global lock
+wallpaper or the GXDE default.
 
-<!-- ROADMAP -->
-## Roadmap
-- [x] Add DEB packaging.
-- [x] Port DDE Greeter.
-- [x] Add support for Wayland greeter.
-- [x] Update support for CMake.
-- [x] Add support for on-screen keyboard.
-- [x] Add Archlinux packaging.
+### Fingerprint unlock
+See [docs/FINGERPRINT.md](./docs/FINGERPRINT.md) (Chinese).
 
-Please refer to [opened issues](https://gitee.com/GXDE-OS/gxde-display-manager/issues) to see those feature requested.
-
-
-
-<!-- CONTRIBUTING -->
 ## Contributing
-We are grateful to all contributors. If you have any suggestions for making GXDM better or feature requests, feel free to open a new Issue. You can also fork this repo and submit a pull request.
+Issues and pull requests are welcome.
 
-### Add Packing for Other Distros
-If you want to add packaging for other distros, please make sure that your package installs `./data/configs/OMG.conf` to `/etc/gxdm/`.
+### Packaging for Other Distros
+Install `data/configs/OMG.conf` to `/etc/gxde-lock/` (CMake does this) and
+the PAM files from `services/` as `/etc/pam.d/gxde-lock` and
+`/etc/pam.d/gxde-lock-fingerprint`.
 
-### Top Contributors
-***NOTE**: GXDM is based on SDDM, and the contribution information of SDDM could be found [here](https://github.com/sddm/sddm/graphs/contributors?all=1).*
+***NOTE**: gxde-lock comes from GXDM, which is based on SDDM; SDDM's contributors are listed [here](https://github.com/sddm/sddm/graphs/contributors?all=1).*
 
-<a href="https://github.com/GXDE-OS/gxde-display-manager/graphs/contributors?all=1">
-  <img src="https://contrib.rocks/image?repo=GXDE-OS/gxde-display-manager" alt="contrib.rocks image" />
-</a>
-
-
-<!-- LICENSE -->
 ## License
 This project is licensed under [GNU GENERAL PUBLIC LICENSE Version 3](./LICENSE).
+Files inherited from SDDM keep their GPL-2.0-or-later headers.
 
-This project contains source code from GXDE `session-ui`, which could be located under `src/greeter-classic` and upstream [GXDE-OS/gxde-session-ui](https://gitee.com/GXDE-OS/gxde-session-ui). They are licensed under [GNU GENERAL PUBLIC LICENSE Version 3](https://gitee.com/GXDE-OS/gxde-session-ui/blob/master/LICENSE?svcp_stk=1_ea4aETwwgfjPoBNPiiCDEDSV5zkBHs2UhWwbnE9dOUMgTQpn3GWWsP7g-d5P7vdOc8pUy6n3gqUzBwYWRSpsMn5glSx_AwPrOegiEQB6-z-bFaJX84-951qO7y66p6b5okTkZXtJkAnfclQjppYXX55voA3ESpiytcTqZIN1qUEqZKeRHjnERUf83GXnqoXUeXTWmfPGOafIokUE6EkrfA%3D%3D) unless specified in file header.
+`src/lock-classic` contains code from GXDE `session-ui`
+([GXDE-OS/gxde-session-ui](https://gitee.com/GXDE-OS/gxde-session-ui)),
+licensed under GPL-3.0 unless a file header says otherwise.
 
-This project contains source code from [CharOfString/samoyed-greeter](https://gitee.com/CharOfString/samoyed-greeter). They are licensed under [GNU GENERAL PUBLIC LICENSE Version 3](https://gitee.com/CharOfString/samoyed-greeter/blob/main/LICENSE) unless specified in file header.
+This project contains source code from [CharOfString/samoyed-greeter](https://gitee.com/CharOfString/samoyed-greeter), licensed under GPL-3.0 unless a file header says otherwise.
 
-This project uses [Maven Pro](https://github.com/googlefonts/mavenproFont) as lockscreen font, which is licensed under [SIL Open Font License 1.1](https://github.com/googlefonts/mavenproFont/blob/main/OFL.txt).
+The lock screen font is [Maven Pro](https://github.com/googlefonts/mavenproFont), licensed under the [SIL Open Font License 1.1](https://github.com/googlefonts/mavenproFont/blob/main/OFL.txt).
 
-
-<!-- ACKNOWLEDGMENTS -->
 ## Acknowledgements
-The development of GXDM draws heavily on the reference and inspiration from the following projects: 
 * **SDDM**: https://github.com/sddm/sddm
-* **LightDM**: https://github.com/ubuntu/lightdm
+* **GXDE Display Manager**: https://github.com/GXDE-OS/gxde-display-manager
 * **GXDE Session UI**: https://gitee.com/GXDE-OS/gxde-session-ui
 * **Samoyed Greeter**: https://gitee.com/CharOfString/samoyed-greeter
 * **BEST-Readme-Template**: https://github.com/othneildrew/Best-README-Template
-* **SilentSDDM**: https://github.com/uiriansan/SilentSDDM

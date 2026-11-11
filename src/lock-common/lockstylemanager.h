@@ -28,9 +28,9 @@ namespace gxde {
 namespace lock {
 
 // Watches the configured lock screen style and asks the running locker to hand
-// off to the matching binary. The style itself is persisted by the GXDM daemon
-// (top.gxde.DisplayManager.System.SetLockScreenStyle) because /etc/gxdm.conf
-// is not writable from the session; this class only re-reads it.
+// off to the matching binary. The style itself is persisted by the root helper
+// (top.gxde.Lock.System.SetLockScreenStyle) because /etc/gxde-lock.conf is not
+// writable from the session; this class only re-reads it.
 //
 // A change made while the lock screen is visible is deferred until unlock so
 // the session lock is never released while the desktop is hidden.

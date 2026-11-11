@@ -1,0 +1,74 @@
+#ifndef LOCKCONTENT_H
+#define LOCKCONTENT_H
+
+#include <QWidget>
+#include <QTranslator>
+#include <memory>
+
+
+#include "sessionbasewindow.h"
+#include "sessionbasemodel.h"
+
+
+class ControlWidget;
+class UserInputWidget;
+class User;
+class UserFrame;
+class SessionWidget;
+class ShutdownWidget;
+class LockContent : public SessionBaseWindow
+{
+    Q_OBJECT
+public:
+    explicit LockContent(SessionBaseModel * const model, QWidget *parent = nullptr);
+    bool sessionSwitcherEnabled() const;
+
+signals:
+    void requestBackground(const QString &path);
+    void requestBackgroundFocus(bool focused);
+    void requestAuthUser(const QString &password);
+    void requestSwitchToUser(std::shared_ptr<User> user);
+    void requestSetLayout(std::shared_ptr<User> user, const QString &value);
+
+public slots:
+    void onCurrentUserChanged(std::shared_ptr<User> user);
+    void pushUserFrame();
+    void pushSessionFrame();
+    void pushShutdownFrame();
+    void onStatusChanged(SessionBaseModel::ModeStatus status);
+
+private slots:
+    void onGlobalWallpaperChanged(const QString &wallpaper);
+
+protected:
+    void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
+    void hideEvent(QHideEvent *event) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
+
+private:
+    void releaseAllKeyboard();
+    void restoreCenterContent();
+    void restoreMode();
+    bool startFromAvatarMode() const;
+    QString currentBackgroundPath() const;
+    void updateBackground(const QString &path);
+    void onBlurDone(const QString &source, const QString &blur, bool status);
+    void toggleVirtualKB();
+    void updateVirtualKBPosition();
+    void onUserListChanged(QList<std::shared_ptr<User>> list);
+
+private:
+    SessionBaseModel *m_model;
+    ControlWidget *m_controlWidget;
+    UserInputWidget *m_userInputWidget;
+    UserFrame *m_userFrame;
+    SessionWidget *m_sessionFrame;
+    ShutdownWidget *m_shutdownFrame;
+    QWidget *m_virtualKB;
+    std::shared_ptr<User> m_user;
+    QList<QMetaObject::Connection> m_currentUserConnects;
+    QTranslator *m_translator;
+};
+
+#endif // LOCKCONTENT_H

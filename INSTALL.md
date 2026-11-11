@@ -1,21 +1,21 @@
 ## CMake installation instructions
 
-GXDM requires CMake 3.16 or newer, a C++20 compiler, Qt 6 and DTK2Widget-Qt6.
-The complete package dependency list is maintained in `debian/control`.
+gxde-lock requires CMake 3.21 or newer, a C++20 compiler, Qt 6.5+ and
+DTK2Widget-Qt6. The complete package dependency list is maintained in
+`debian/control`.
 
 Configure and build from the project root:
 
 ```sh
 cmake -S . -B build-cmake \
-    -DBUILD_WITH_QT6=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr
-cmake --build build-cmake --parallel
+cmake --build build-cmake -j4
 ```
 
-The default build includes the daemon, the Qt 6 QML greeter, the GXDE greeter,
-the GXDE lock screen and all helper executables. Stage the complete install tree
-before installing it onto the host:
+The default build includes both lock screens (`gxde-lock-classic`,
+`gxde-lock-neo`), the authentication helper and the root helper. Stage the
+install tree before installing it onto the host:
 
 ```sh
 DESTDIR="$PWD/build-cmake/stage" cmake --install build-cmake
@@ -29,10 +29,9 @@ sudo cmake --install build-cmake
 
 Useful project options include:
 
-- `BUILD_MAN_PAGES=ON` builds the manual pages (requires `rst2man`).
+- `BUILD_NEO_LOCK=OFF` builds only the classic lock screen.
+- `LOCK_BUILD_TESTS=ON` builds the lock backend tests.
 - `ENABLE_JOURNALD=OFF` disables journald logging.
-- `BUILD_CLASSIC_GREETER=OFF` excludes the GXDE greeter and lock screen.
-- `BUILD_WITH_QT6=OFF -DBUILD_CLASSIC_GREETER=OFF` enables the legacy Qt 5 build.
 - `INSTALL_PAM_CONFIGURATION=OFF` skips installation of PAM configuration.
 
 Run `cmake -S . -B build-cmake -LAH` to list all cached options. CMake installs

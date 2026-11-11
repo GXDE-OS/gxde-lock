@@ -1,7 +1,7 @@
 """Minimal Qt6 rule set
 
 Provides:
-  gxdm_configure_file - CMake-style @VAR@ / ${VAR} template substitution.
+  lock_configure_file - CMake-style @VAR@ / ${VAR} template substitution.
   qt_moc             - run moc over headers -> moc_*.cpp (added to a target's srcs).
   qt_rcc             - compile a .qrc -> qrc_*.cpp.
   qt_qml_module      - compile QML files into a qrc_*.cpp QML module.
@@ -30,7 +30,7 @@ def _stem(p):
     b = _basename(p)
     return b[:b.rindex(".")] if "." in b else b
 
-def gxdm_configure_file(name, src, out, extra = {}):
+def lock_configure_file(name, src, out, extra = {}):
     """Substitute @VAR@ and ${VAR} from CONSTANTS (+ extra) like CMake configure_file."""
     subs = dict(CONSTANTS)
     subs.update(extra)

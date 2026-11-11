@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    purge)
+        # Global wallpaper and cursor saved by gxde-lock-system.
+        if [ -d /var/lib/gxde-lock ]; then rm -r /var/lib/gxde-lock; fi
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

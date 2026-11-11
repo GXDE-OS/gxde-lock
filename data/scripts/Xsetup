@@ -1,7 +1,0 @@
-#!/bin/sh
-# Xsetup - run as root before the login dialog appears
-
-# Force start VBoxClient for Virtual Box VMs. This one is responsible for screen resizing.
-if [ -c /dev/vboxguest ] && [ -x /usr/bin/VBoxClient ]; then
-    XDG_SESSION_TYPE=x11 /usr/bin/VBoxClient --vmsvga --session-type x11 >/dev/null 2>&1 || true
-fi

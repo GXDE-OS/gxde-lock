@@ -1,0 +1,13 @@
+#%PAM-1.0
+# Fingerprint-only stack. gxde-lock runs it alongside the password stack
+# (gxde-lock) when fprintd has a reader and the user has enrolled fingers.
+#
+# Never prefix pam_fprintd with "-": if the module were missing, the rest of
+# this stack must not succeed on its own.
+
+auth    required        pam_fprintd.so
+
+@include common-account
+
+# A fingerprint cannot change a password.
+password required       pam_deny.so

@@ -1,38 +1,18 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(SDDM)
+project(gxde-lock LANGUAGES C CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-# Set version
-set(SDDM_VERSION_MAJOR 0)
-set(SDDM_VERSION_MINOR 21)
-set(SDDM_VERSION_PATCH 0)
-set(SDDM_VERSION_STRING "${SDDM_VERSION_MAJOR}.${SDDM_VERSION_MINOR}.${SDDM_VERSION_PATCH}")
-add_compile_definitions("SDDM_VERSION=\"${SDDM_VERSION_STRING}\"")
-
 # Options
-option(BUILD_MAN_PAGES "Build man pages" OFF)
 option(ENABLE_JOURNALD "Enable logging to journald" ON)
 option(NO_SYSTEMD "Disable systemd support" OFF)
 option(USE_ELOGIND "Use elogind instead of logind" OFF)
-option(BUILD_WITH_QT6 "Build with Qt 6" ON)
-option(BUILD_NEO_GREETER "Build the new QML greeter" ON)
-option(BUILD_CLASSIC_GREETER "Build the GXDE greeter and lock screen" ON)
-option(BUILD_NEO_LOCK "Build the QML lock screen" ON)
+option(BUILD_NEO_LOCK "Build the QML lock screen (gxde-lock-neo)" ON)
 option(LOCK_BUILD_TESTS "Build lock screen backend tests" OFF)
 option(INSTALL_PAM_CONFIGURATION "Install PAM configuration files" ON)
-
-if((BUILD_CLASSIC_GREETER OR BUILD_NEO_GREETER OR BUILD_NEO_LOCK) AND NOT BUILD_WITH_QT6)
-    message(FATAL_ERROR "The GXDE greeters and lock screens require BUILD_WITH_QT6=ON")
-endif()
-
-if(BUILD_NEO_LOCK AND NOT BUILD_CLASSIC_GREETER)
-    message(WARNING "BUILD_NEO_LOCK requires BUILD_CLASSIC_GREETER; disabling the QML lock screen")
-    set(BUILD_NEO_LOCK OFF)
-endif()
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -79,38 +59,8 @@ find_package(PkgConfig)
 # PAM
 find_package(PAM REQUIRED)
 
-# XAU
-pkg_check_modules(LIBXAU REQUIRED "xau")
-
-# XCB
-find_package(XCB REQUIRED)
-
-# XKB
-find_package(XKB REQUIRED)
-if(BUILD_WITH_QT6 AND NOT TARGET XKB::XKB)
-    pkg_check_modules(XKBCOMMON IMPORTED_TARGET xkbcommon)
-    if(TARGET PkgConfig::XKBCOMMON)
-        add_library(XKB::XKB INTERFACE IMPORTED)
-        target_link_libraries(XKB::XKB INTERFACE PkgConfig::XKBCOMMON)
-    endif()
-endif()
-
 # Qt
-if(BUILD_WITH_QT6)
-    set(QT_MAJOR_VERSION 6)
-    message(STATUS "Building Qt 6 version")
-else()
-    set(QT_MAJOR_VERSION 5)
-    message(STATUS "Building Qt 5 version")
-endif()
-
-find_package(Qt${QT_MAJOR_VERSION} 5.15.0 CONFIG REQUIRED Core DBus Gui Qml Quick LinguistTools Test QuickTest)
-
-# find qt5 imports dir
-get_target_property(QMAKE_EXECUTABLE Qt${QT_MAJOR_VERSION}::qmake LOCATION)
-if(NOT QT_IMPORTS_DIR)
-    execute_process(COMMAND ${QMAKE_EXECUTABLE} -query QT_INSTALL_QML OUTPUT_VARIABLE QT_IMPORTS_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif()
+find_package(Qt6 6.5 CONFIG REQUIRED Core DBus Gui Qml Quick Network Test)
 
 # systemd
 if(NOT NO_SYSTEMD AND NOT USE_ELOGIND)
@@ -137,18 +87,6 @@ if(SYSTEMD_FOUND)
         endif()
     endif()
 
-    if (NOT DEFINED SYSTEMD_SYSTEM_UNIT_DIR)
-        pkg_get_variable(SYSTEMD_SYSTEM_UNIT_DIR systemd systemdsystemunitdir)
-    endif()
-
-    if (NOT DEFINED SYSTEMD_SYSUSERS_DIR)
-        pkg_get_variable(SYSTEMD_SYSUSERS_DIR systemd sysusersdir)
-    endif()
-
-    if (NOT DEFINED SYSTEMD_TMPFILES_DIR)
-        pkg_get_variable(SYSTEMD_TMPFILES_DIR systemd tmpfilesdir)
-    endif()
-
     set(HALT_COMMAND "/usr/bin/systemctl poweroff")
     set(REBOOT_COMMAND "/usr/bin/systemctl reboot")
 else()
@@ -173,9 +111,7 @@ add_feature_info("elogind" ELOGIND_FOUND "elogind support")
 
 # Default behaviour if neither systemd nor elogind is used
 if (NOT ELOGIND_FOUND AND NOT SYSTEMD_FOUND)
-    # Set the VT on which sddm will normally appear, and the
-    # commands for shutdown and reboot. On FreeBSD, there are
-    # normally more getty's running than on Linux.
+    # Shutdown and reboot commands for the root helper's power actions.
     if("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD")
         set(HALT_COMMAND "/sbin/shutdown -p now")
     else()
@@ -184,67 +120,15 @@ if (NOT ELOGIND_FOUND AND NOT SYSTEMD_FOUND)
     set(REBOOT_COMMAND "/sbin/shutdown -r now")
 endif()
 
-if (SYSTEMD_FOUND)
-    set(RUNTIME_DIR_DEFAULT "/run/gxdm")
-else()
-    set(RUNTIME_DIR_DEFAULT "${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/run/gxdm")
-endif()
-
-
 # Set constants
-set(DATA_INSTALL_DIR            "${CMAKE_INSTALL_FULL_DATADIR}/gxdm"                CACHE PATH      "System application data install directory")
-set(DBUS_CONFIG_DIR             "${CMAKE_INSTALL_FULL_DATADIR}/dbus-1/system.d"       CACHE PATH      "DBus config files directory")
-set(STATE_DIR                   "${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/lib/gxdm"      CACHE PATH      "State directory")
-set(RUNTIME_DIR                 "${RUNTIME_DIR_DEFAULT}"                            CACHE PATH      "Runtime data storage directory")
-set(QML_INSTALL_DIR             "${QT_IMPORTS_DIR}"                                 CACHE PATH      "QML component installation directory")
-
-set(SESSION_COMMAND             "${DATA_INSTALL_DIR}/scripts/Xsession"              CACHE PATH      "Script to execute when starting the X11 desktop session")
-set(WAYLAND_SESSION_COMMAND     "${DATA_INSTALL_DIR}/scripts/wayland-session"       CACHE PATH      "Script to execute when starting the Wayland desktop session")
-
-set(CONFIG_FILE                 "${CMAKE_INSTALL_FULL_SYSCONFDIR}/gxdm.conf"        CACHE PATH      "Path of the gxdm config file")
-set(CONFIG_DIR                  "${CMAKE_INSTALL_FULL_SYSCONFDIR}/gxdm.conf.d"      CACHE PATH      "Path of the gxdm config directory")
-set(ACCOUNTSSERVICE_DATA_DIR    "/var/lib/AccountsService"                          CACHE PATH      "Path of the accountsservice data directory")
-set(SYSTEM_CONFIG_DIR           "${CMAKE_INSTALL_PREFIX}/lib/gxdm/gxdm.conf.d"      CACHE PATH      "Path of the system gxdm config directory")
-set(LOG_FILE                    "${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/log/gxdm.log"  CACHE PATH      "Path of the gxdm log file")
-set(DBUS_CONFIG_FILENAME        "org.freedesktop.DisplayManager-gxdm.conf"          CACHE STRING    "Name of the gxdm dbus config file")
-set(COMPONENTS_TRANSLATION_DIR  "${DATA_INSTALL_DIR}/translations-qt${QT_MAJOR_VERSION}" CACHE PATH      "Components translations directory")
-set(SDDM_INITIAL_VT             "1"                                                 CACHE STRING    "Initial tty to use")
-
-
-# Autodetect UID_MIN and UID_MAX from /etc/login.defs
-if(NOT DEFINED LOGIN_DEFS_PATH)
-    set(LOGIN_DEFS_PATH "/etc/login.defs" CACHE PATH "Path to login.defs")
-endif()
-
-if(NOT EXISTS "${LOGIN_DEFS_PATH}" AND NOT DEFINED UID_MIN AND NOT DEFINED UID_MAX)
-    message(FATAL_ERROR "Could not find login.defs at ${LOGIN_DEFS_PATH}. Try -DLOGIN_DEFS_PATH.")
-endif()
-
-if(NOT DEFINED UID_MIN)
-    file(STRINGS "${LOGIN_DEFS_PATH}" UID_MIN LIMIT_COUNT 1 REGEX "^UID_MIN")
-    string(REGEX REPLACE "^UID_MIN[\t ]+([0-9]+)" "\\1" UID_MIN "${UID_MIN}")
-    if(NOT UID_MIN MATCHES "[0-9]+")
-        message(WARNING "Could not detect a valid UID_MIN (got '${UID_MIN}'). You should review your login.defs file.")
-        set(UID_MIN 1000)
-    else()
-        message(STATUS "Autodetected UID_MIN=${UID_MIN} from ${LOGIN_DEFS_PATH}")
-    endif()
-endif()
-
-if(NOT DEFINED UID_MAX)
-    file(STRINGS "${LOGIN_DEFS_PATH}" UID_MAX LIMIT_COUNT 1 REGEX "^UID_MAX")
-    string(REGEX REPLACE "^UID_MAX[\t ]+([0-9]+)" "\\1" UID_MAX "${UID_MAX}")
-    if(NOT UID_MAX MATCHES "[0-9]+")
-        message(WARNING "Could not detect a valid UID_MAX (got '${UID_MAX}'). You should review your login.defs file.")
-        set(UID_MAX 65000)
-    else()
-        message(STATUS "Autodetected UID_MAX=${UID_MAX} from ${LOGIN_DEFS_PATH}")
-    endif()
-endif()
+set(STATE_DIR                   "${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/lib/gxde-lock" CACHE PATH      "State directory of the root helper")
+set(CONFIG_FILE                 "${CMAKE_INSTALL_FULL_SYSCONFDIR}/gxde-lock.conf"   CACHE PATH      "Path of the gxde-lock config file")
+set(OMG_CONFIG_FILE             "${CMAKE_INSTALL_FULL_SYSCONFDIR}/gxde-lock/OMG.conf" CACHE PATH    "Path of the Oh-My-GXDE config file")
+set(DBUS_SYSTEM_CONFIG_DIR      "${CMAKE_INSTALL_FULL_DATADIR}/dbus-1/system.d"     CACHE PATH      "D-Bus system bus policy directory")
 
 # Add subdirectories
 enable_testing()
-add_subdirectory(components)
+configure_file("src/common/Constants.h.in" "src/common/Constants.h" IMMEDIATE @ONLY)
 add_subdirectory(data)
 add_subdirectory(services)
 add_subdirectory(src)

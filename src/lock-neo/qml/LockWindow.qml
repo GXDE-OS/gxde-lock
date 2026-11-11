@@ -35,7 +35,7 @@ Window {
     : (Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
   visibility: testMode ? Window.Windowed
     : (shown ? Window.FullScreen : Window.Hidden)
-  title: qsTr("GXDM Lock Screen")
+  title: qsTr("GXDE Lock Screen")
 
   onClosing: function(close) {
     if (root.testMode) {

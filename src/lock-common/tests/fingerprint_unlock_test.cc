@@ -25,7 +25,7 @@ namespace {
 using gxde::FingerprintSession;
 using State = FingerprintSession::State;
 
-// Replaces fprintd and gxdm-helper: records calls, and lets the test answer.
+// Replaces fprintd and gxde-lock-auth-helper: records calls, and lets the test answer.
 class FakeFingerprint : public FingerprintSession {
  public:
   FakeFingerprint() { SetQuickFailureMs(200); }
@@ -147,7 +147,7 @@ class FingerprintSessionTest : public QObject {
     FakeFingerprint fp;
     fp.Start(QStringLiteral("demo"));
     fp.ProbeFinished(QStringLiteral("demo"), true);
-    // e.g. no gxdm-fingerprint PAM service: fails before any scan.
+    // e.g. no gxde-lock-fingerprint PAM service: fails before any scan.
     fp.RunFinished(false);
     QCOMPARE(fp.GetState(), State::kUnavailable);
     QCOMPARE(fp.runs, 1);

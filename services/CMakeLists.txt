@@ -1,45 +1,14 @@
-if(SYSTEMD_FOUND)
-    configure_file(gxdm.service.in gxdm.service)
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gxdm.service" DESTINATION "${SYSTEMD_SYSTEM_UNIT_DIR}")
-
-    configure_file(gxdm-sysuser.conf.in gxdm-sysuser.conf)
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gxdm-sysuser.conf" DESTINATION "${SYSTEMD_SYSUSERS_DIR}" RENAME gxdm.conf)
-endif()
-
-# systemd-tmpfiles can be used standalone without other systemd parts
-if(DEFINED SYSTEMD_TMPFILES_DIR)
-    configure_file(gxdm-tmpfiles.conf.in gxdm-tmpfiles.conf)
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gxdm-tmpfiles.conf" DESTINATION "${SYSTEMD_TMPFILES_DIR}" RENAME gxdm.conf)
-endif()
-
-if(USE_ELOGIND)
-    set(LOGIND_PAM_MODULE "pam_elogind.so")
-else()
-    set(LOGIND_PAM_MODULE "pam_systemd.so")
-endif()
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/gxdm-greeter.pam.in" "${CMAKE_CURRENT_BINARY_DIR}/gxdm-greeter.pam")
-
 if(INSTALL_PAM_CONFIGURATION)
+    set(PAM_DIR "${CMAKE_INSTALL_FULL_SYSCONFDIR}/pam.d")
     if(EXISTS "/etc/debian_version")
-        install(FILES debian.gxdm-autologin.pam DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/pam.d RENAME gxdm-autologin)
-        install(FILES debian.gxdm-greeter.pam DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/pam.d RENAME gxdm-greeter)
-        install(FILES debian.gxdm.pam DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/pam.d RENAME gxdm)
-        install(FILES debian.gxdm-fingerprint.pam DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/pam.d RENAME gxdm-fingerprint)
+        install(FILES debian.gxde-lock.pam DESTINATION ${PAM_DIR} RENAME gxde-lock)
+        install(FILES debian.gxde-lock-fingerprint.pam DESTINATION ${PAM_DIR} RENAME gxde-lock-fingerprint)
     elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
-        install(FILES freebsd.gxdm-autologin.pam DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/pam.d RENAME gxdm-autologin)
-        install(FILES freebsd.gxdm-greeter.pam DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/pam.d RENAME gxdm-greeter)
-        install(FILES freebsd.gxdm.pam DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/pam.d RENAME gxdm)
-        # No gxdm-fingerprint: fprintd is not part of the FreeBSD base. gxdm
-        # only starts fingerprint authentication when fprintd reports a reader.
+        install(FILES freebsd.gxde-lock.pam DESTINATION ${PAM_DIR} RENAME gxde-lock)
+        # No gxde-lock-fingerprint: fprintd is not part of the FreeBSD base.
+        # Fingerprint unlock only starts when fprintd reports a reader.
     else()
-        if(HAVE_PAM_FAILLOCK)
-           install(FILES gxdm-autologin.pam DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/pam.d RENAME gxdm-autologin)
-        else()
-           install(FILES gxdm-autologin-tally2.pam DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/pam.d RENAME gxdm-autologin)
-        endif()
-
-        install(FILES gxdm.pam DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/pam.d RENAME gxdm)
-        install(FILES gxdm-fingerprint.pam DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/pam.d RENAME gxdm-fingerprint)
-        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gxdm-greeter.pam" DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/pam.d RENAME gxdm-greeter)
+        install(FILES gxde-lock.pam DESTINATION ${PAM_DIR} RENAME gxde-lock)
+        install(FILES gxde-lock-fingerprint.pam DESTINATION ${PAM_DIR} RENAME gxde-lock-fingerprint)
     endif()
 endif()

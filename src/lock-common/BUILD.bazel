@@ -4,10 +4,10 @@ package(default_visibility = ["//visibility:public"])
 
 # Mirrors src/lock-common/CMakeLists.txt. The session model and the lock
 # backend (PAM worker, D-Bus surface, Wayland session lock) still live in
-# src/greeter-classic and are exposed there as :neo_common and :lock_backend.
+# src/lock-classic and are exposed there as :neo_common and :lock_backend.
 
 # Lock screen style resolution and the exec handoff. No widget dependencies,
-# so the daemon links it too.
+# so gxde-lock-system links it too.
 qt_cc_library(
     name = "lock_style",
     srcs = ["lockstyle.cpp"],
@@ -25,11 +25,11 @@ qt_cc_library(
     copts = ["-std=c++20"],
     deps = [
         ":lock_style",
-        "//src/greeter-classic:neo_common",
+        "//src/lock-classic:neo_common",
     ],
 )
 
-# QML-facing facade and user carousel model used by gxdm-lock-neo.
+# QML-facing facade and user carousel model used by gxde-lock-neo.
 qt_cc_library(
     name = "lock_common",
     srcs = [
@@ -56,6 +56,6 @@ qt_cc_library(
     copts = ["-std=c++20"],
     deps = [
         ":lock_style_manager",
-        "//src/greeter-classic:lock_backend",
+        "//src/lock-classic:lock_backend",
     ],
 )

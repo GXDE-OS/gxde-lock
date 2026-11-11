@@ -53,7 +53,7 @@ class LockStyleTest : public QObject {
  private slots:
   void defaultsToModern();
   void defaultFallsBackToClassicWithoutNeo();
-  void gxdmConfigWins();
+  void lockConfigWins();
   void omgFallback();
   void stripsInlineComments();
   void fallsBackWhenModernBinaryMissing();
@@ -70,12 +70,12 @@ void LockStyleTest::defaultsToModern() {
   const QString bin = dir.filePath(QStringLiteral("bin"));
   QVERIFY(QDir().mkpath(bin));
   QVERIFY(makeExecutable(QDir(bin).filePath(
-      QStringLiteral("gxdm-lock-classic"))));
+      QStringLiteral("gxde-lock-classic"))));
   QVERIFY(makeExecutable(QDir(bin).filePath(
-      QStringLiteral("gxdm-lock-neo"))));
+      QStringLiteral("gxde-lock-neo"))));
 
   QVERIFY(gxde::lock::LockStyleResolver::ResolveFromFiles(
-              dir.filePath(QStringLiteral("missing-gxdm.conf")),
+              dir.filePath(QStringLiteral("missing-gxde-lock.conf")),
               dir.filePath(QStringLiteral("missing-omg.conf")), bin) ==
           gxde::lock::LockStyle::kModern);
 }
@@ -87,30 +87,30 @@ void LockStyleTest::defaultFallsBackToClassicWithoutNeo() {
   const QString bin = dir.filePath(QStringLiteral("bin"));
   QVERIFY(QDir().mkpath(bin));
   QVERIFY(makeExecutable(QDir(bin).filePath(
-      QStringLiteral("gxdm-lock-classic"))));
+      QStringLiteral("gxde-lock-classic"))));
 
   QVERIFY(gxde::lock::LockStyleResolver::ResolveFromFiles(
-              dir.filePath(QStringLiteral("missing-gxdm.conf")),
+              dir.filePath(QStringLiteral("missing-gxde-lock.conf")),
               dir.filePath(QStringLiteral("missing-omg.conf")), bin) ==
           gxde::lock::LockStyle::kClassic);
 }
 
-void LockStyleTest::gxdmConfigWins() {
+void LockStyleTest::lockConfigWins() {
   QTemporaryDir dir;
   QVERIFY(dir.isValid());
 
-  const QString gxdm = dir.filePath(QStringLiteral("gxdm.conf"));
+  const QString config = dir.filePath(QStringLiteral("gxde-lock.conf"));
   const QString omg = dir.filePath(QStringLiteral("OMG.conf"));
   const QString bin = dir.filePath(QStringLiteral("bin"));
   QVERIFY(QDir().mkpath(bin));
   QVERIFY(makeExecutable(QDir(bin).filePath(
-      QStringLiteral("gxdm-lock-classic"))));
+      QStringLiteral("gxde-lock-classic"))));
   QVERIFY(makeExecutable(QDir(bin).filePath(
-      QStringLiteral("gxdm-lock-neo"))));
-  QVERIFY(writeFile(gxdm, "[General]\nLockScreenStyle=modern\n"));
+      QStringLiteral("gxde-lock-neo"))));
+  QVERIFY(writeFile(config, "[General]\nLockScreenStyle=modern\n"));
   QVERIFY(writeFile(omg, "[NextFeatReq]\nSwitchLkScrStyle=CLASSIC\n"));
 
-  QVERIFY(gxde::lock::LockStyleResolver::ResolveFromFiles(gxdm, omg, bin) ==
+  QVERIFY(gxde::lock::LockStyleResolver::ResolveFromFiles(config, omg, bin) ==
           gxde::lock::LockStyle::kModern);
 }
 
@@ -118,18 +118,18 @@ void LockStyleTest::omgFallback() {
   QTemporaryDir dir;
   QVERIFY(dir.isValid());
 
-  const QString gxdm = dir.filePath(QStringLiteral("gxdm.conf"));
+  const QString config = dir.filePath(QStringLiteral("gxde-lock.conf"));
   const QString omg = dir.filePath(QStringLiteral("OMG.conf"));
   const QString bin = dir.filePath(QStringLiteral("bin"));
   QVERIFY(QDir().mkpath(bin));
   QVERIFY(makeExecutable(QDir(bin).filePath(
-      QStringLiteral("gxdm-lock-classic"))));
+      QStringLiteral("gxde-lock-classic"))));
   QVERIFY(makeExecutable(QDir(bin).filePath(
-      QStringLiteral("gxdm-lock-neo"))));
-  QVERIFY(writeFile(gxdm, "[General]\n"));
+      QStringLiteral("gxde-lock-neo"))));
+  QVERIFY(writeFile(config, "[General]\n"));
   QVERIFY(writeFile(omg, "[NextFeatReq]\nSwitchLkScrStyle=MODERN\n"));
 
-  QVERIFY(gxde::lock::LockStyleResolver::ResolveFromFiles(gxdm, omg, bin) ==
+  QVERIFY(gxde::lock::LockStyleResolver::ResolveFromFiles(config, omg, bin) ==
           gxde::lock::LockStyle::kModern);
 }
 
@@ -137,19 +137,19 @@ void LockStyleTest::stripsInlineComments() {
   QTemporaryDir dir;
   QVERIFY(dir.isValid());
 
-  const QString gxdm = dir.filePath(QStringLiteral("gxdm.conf"));
+  const QString config = dir.filePath(QStringLiteral("gxde-lock.conf"));
   const QString omg = dir.filePath(QStringLiteral("OMG.conf"));
   const QString bin = dir.filePath(QStringLiteral("bin"));
   QVERIFY(QDir().mkpath(bin));
   QVERIFY(makeExecutable(QDir(bin).filePath(
-      QStringLiteral("gxdm-lock-classic"))));
+      QStringLiteral("gxde-lock-classic"))));
   QVERIFY(makeExecutable(QDir(bin).filePath(
-      QStringLiteral("gxdm-lock-neo"))));
-  QVERIFY(writeFile(gxdm,
+      QStringLiteral("gxde-lock-neo"))));
+  QVERIFY(writeFile(config,
                     "[General]\nLockScreenStyle=modern ; use the QML locker\n"));
   QVERIFY(writeFile(omg, "[NextFeatReq]\n"));
 
-  QVERIFY(gxde::lock::LockStyleResolver::ResolveFromFiles(gxdm, omg, bin) ==
+  QVERIFY(gxde::lock::LockStyleResolver::ResolveFromFiles(config, omg, bin) ==
           gxde::lock::LockStyle::kModern);
 }
 
@@ -157,16 +157,16 @@ void LockStyleTest::fallsBackWhenModernBinaryMissing() {
   QTemporaryDir dir;
   QVERIFY(dir.isValid());
 
-  const QString gxdm = dir.filePath(QStringLiteral("gxdm.conf"));
+  const QString config = dir.filePath(QStringLiteral("gxde-lock.conf"));
   const QString omg = dir.filePath(QStringLiteral("OMG.conf"));
   const QString bin = dir.filePath(QStringLiteral("bin"));
   QVERIFY(QDir().mkpath(bin));
   QVERIFY(makeExecutable(QDir(bin).filePath(
-      QStringLiteral("gxdm-lock-classic"))));
-  QVERIFY(writeFile(gxdm, "[General]\nLockScreenStyle=modern\n"));
+      QStringLiteral("gxde-lock-classic"))));
+  QVERIFY(writeFile(config, "[General]\nLockScreenStyle=modern\n"));
   QVERIFY(writeFile(omg, "[NextFeatReq]\n"));
 
-  QVERIFY(gxde::lock::LockStyleResolver::ResolveFromFiles(gxdm, omg, bin) ==
+  QVERIFY(gxde::lock::LockStyleResolver::ResolveFromFiles(config, omg, bin) ==
           gxde::lock::LockStyle::kClassic);
 }
 
@@ -174,24 +174,24 @@ namespace {
 
 struct StyleFixture {
   QTemporaryDir dir;
-  QString gxdm;
+  QString config;
   QString omg;
   QString bin;
 
   explicit StyleFixture(bool withNeo) {
-    gxdm = dir.filePath(QStringLiteral("gxdm.conf"));
+    config = dir.filePath(QStringLiteral("gxde-lock.conf"));
     omg = dir.filePath(QStringLiteral("OMG.conf"));
     bin = dir.filePath(QStringLiteral("bin"));
     QDir().mkpath(bin);
-    makeExecutable(QDir(bin).filePath(QStringLiteral("gxdm-lock-classic")));
+    makeExecutable(QDir(bin).filePath(QStringLiteral("gxde-lock-classic")));
     if (withNeo) {
-      makeExecutable(QDir(bin).filePath(QStringLiteral("gxdm-lock-neo")));
+      makeExecutable(QDir(bin).filePath(QStringLiteral("gxde-lock-neo")));
     }
-    writeFile(gxdm, "[General]\nLockScreenStyle=classic\n");
+    writeFile(config, "[General]\nLockScreenStyle=classic\n");
     writeFile(omg, "[NextFeatReq]\n");
   }
 
-  gxde::lock::LockStylePaths paths() const { return {gxdm, omg, bin}; }
+  gxde::lock::LockStylePaths paths() const { return {config, omg, bin}; }
 };
 
 }  // namespace
@@ -210,11 +210,11 @@ void LockStyleTest::managerHandsOffWhenStyleChanges() {
   manager.Refresh();
   QCOMPARE(handoff.count(), 0);
 
-  QVERIFY(writeFile(fixture.gxdm, "[General]\nLockScreenStyle=modern\n"));
+  QVERIFY(writeFile(fixture.config, "[General]\nLockScreenStyle=modern\n"));
   manager.Refresh();
   QCOMPARE(handoff.count(), 1);
   QCOMPARE(handoff.at(0).at(0).toString(),
-           QDir(fixture.bin).filePath(QStringLiteral("gxdm-lock-neo")));
+           QDir(fixture.bin).filePath(QStringLiteral("gxde-lock-neo")));
   QVERIFY(manager.ConfiguredStyle() == gxde::lock::LockStyle::kModern);
   QVERIFY(manager.RunningStyle() == gxde::lock::LockStyle::kClassic);
 }
@@ -231,7 +231,7 @@ void LockStyleTest::managerDefersWhileVisible() {
   QSignalSpy handoff(&manager,
                      &gxde::lock::LockStyleManager::HandoffRequested);
 
-  QVERIFY(writeFile(fixture.gxdm, "[General]\nLockScreenStyle=classic\n"));
+  QVERIFY(writeFile(fixture.config, "[General]\nLockScreenStyle=classic\n"));
   manager.Refresh();
   QCOMPARE(handoff.count(), 0);
   QVERIFY(manager.HandoffPending());
@@ -239,7 +239,7 @@ void LockStyleTest::managerDefersWhileVisible() {
   model.setIsShow(false);
   QCOMPARE(handoff.count(), 1);
   QCOMPARE(handoff.at(0).at(0).toString(),
-           QDir(fixture.bin).filePath(QStringLiteral("gxdm-lock-classic")));
+           QDir(fixture.bin).filePath(QStringLiteral("gxde-lock-classic")));
   QVERIFY(!manager.HandoffPending());
 }
 
@@ -255,12 +255,12 @@ void LockStyleTest::managerDropsRevertedChange() {
   QSignalSpy handoff(&manager,
                      &gxde::lock::LockStyleManager::HandoffRequested);
 
-  QVERIFY(writeFile(fixture.gxdm, "[General]\nLockScreenStyle=modern\n"));
+  QVERIFY(writeFile(fixture.config, "[General]\nLockScreenStyle=modern\n"));
   manager.Refresh();
   QVERIFY(manager.HandoffPending());
 
   // Switched back before unlocking: the deferred handoff must not fire.
-  QVERIFY(writeFile(fixture.gxdm, "[General]\nLockScreenStyle=classic\n"));
+  QVERIFY(writeFile(fixture.config, "[General]\nLockScreenStyle=classic\n"));
   model.setIsShow(false);
   QCOMPARE(handoff.count(), 0);
   QVERIFY(!manager.HandoffPending());
@@ -276,7 +276,7 @@ void LockStyleTest::managerIgnoresMissingBinary() {
   QSignalSpy handoff(&manager,
                      &gxde::lock::LockStyleManager::HandoffRequested);
 
-  QVERIFY(writeFile(fixture.gxdm, "[General]\nLockScreenStyle=modern\n"));
+  QVERIFY(writeFile(fixture.config, "[General]\nLockScreenStyle=modern\n"));
   manager.Refresh();
   QCOMPARE(handoff.count(), 0);
   QVERIFY(manager.ConfiguredStyle() == gxde::lock::LockStyle::kClassic);

@@ -1,5 +1,5 @@
 # QML lock screen frontend. The authentication, user model, Wayland session
-# lock and D-Bus surface come from gxdm-lock-common / gxdm-lock-backend; this
+# lock and D-Bus surface come from gxde-lock-common / gxde-lock-backend; this
 # target only owns the Qt Quick UI and the per-screen window lifecycle.
 
 set(CMAKE_CXX_STANDARD 17)
@@ -33,34 +33,34 @@ foreach(qml_file ${LOCK_NEO_QML_FILES})
 endforeach()
 
 qt_add_resources(LOCK_NEO_RESOURCES
-    "${GXDM_REPO_ROOT}/src/greeter-neo/res/resources.qrc"
+    res/resources.qrc
     lock-neo.qrc
 )
 
-qt_add_executable(gxdm-lock-neo
+qt_add_executable(gxde-lock-neo
     ${LOCK_NEO_RESOURCES}
     src/main.cc
-    "${GXDM_REPO_ROOT}/src/common/GreeterCursor.cpp"
-    "${GXDM_REPO_ROOT}/src/common/GreeterCursor.h"
-    "${GXDM_REPO_ROOT}/src/common/GreeterScale.cpp"
-    "${GXDM_REPO_ROOT}/src/common/GreeterScale.h"
+    "${LOCK_REPO_ROOT}/src/common/LockCursor.cpp"
+    "${LOCK_REPO_ROOT}/src/common/LockCursor.h"
+    "${LOCK_REPO_ROOT}/src/common/LockScale.cpp"
+    "${LOCK_REPO_ROOT}/src/common/LockScale.h"
 )
 
-qt_add_qml_module(gxdm-lock-neo
+qt_add_qml_module(gxde-lock-neo
     URI Lock
     VERSION 1.0
     QML_FILES ${LOCK_NEO_QML_FILES}
 )
 
-set_target_properties(gxdm-lock-neo PROPERTIES
-    OUTPUT_NAME gxdm-lock-neo
-    # Keep the build-tree binary next to gxdm-lock-classic so the classic
+set_target_properties(gxde-lock-neo PROPERTIES
+    OUTPUT_NAME gxde-lock-neo
+    # Keep the build-tree binary next to gxde-lock-classic so the classic
     # locker's style handoff works without installing first.
-    RUNTIME_OUTPUT_DIRECTORY "${GXDM_CLASSIC_BINARY_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY "${LOCK_CLASSIC_BINARY_DIR}"
 )
 
-target_link_libraries(gxdm-lock-neo PRIVATE
-    gxdm-lock-common
+target_link_libraries(gxde-lock-neo PRIVATE
+    gxde-lock-common
     Qt6::Quick
     Qt6::Qml
     LayerShellQt::Interface
@@ -71,7 +71,7 @@ target_link_libraries(gxdm-lock-neo PRIVATE
     Xrandr
 )
 
-install(TARGETS gxdm-lock-neo
+install(TARGETS gxde-lock-neo
     BUNDLE DESTINATION .
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )

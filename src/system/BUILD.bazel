@@ -1,0 +1,38 @@
+load("//bazel/qt:qt.bzl", "qt_cc_binary", "qt_dbus_adaptor", "qt_moc")
+
+package(default_visibility = ["//visibility:public"])
+
+# Root helper on the system bus. Mirrors src/system/CMakeLists.txt.
+_adaptor = qt_dbus_adaptor(
+    name = "gen_locksystemadaptor",
+    xml = "//data/interfaces:top.gxde.Lock.System.xml",
+    parent_header = "lock_system_service.h",
+    parent_class = "gxde::lock::LockSystemService",
+    basename = "locksystemadaptor",
+)
+
+_adaptor_moc = qt_moc(
+    name = "adaptor_moc",
+    hdrs = ["locksystemadaptor.h"],
+)
+
+qt_cc_binary(
+    name = "gxde-lock-system",
+    srcs = [
+        "general_setting.cc",
+        "general_setting.h",
+        "lock_system_service.cc",
+        "lock_system_service.h",
+        "main.cc",
+        # generated header (needed as input)
+        "locksystemadaptor.h",
+        _adaptor,
+    ] + _adaptor_moc,
+    copts = ["-std=c++20"],
+    includes = ["."],
+    moc_hdrs = ["lock_system_service.h"],
+    deps = [
+        "//src/common:constants",
+        "//src/lock-common:lock_style",
+    ],
+)

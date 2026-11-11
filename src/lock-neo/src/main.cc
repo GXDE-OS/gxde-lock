@@ -44,8 +44,8 @@
 #include <memory>
 #include <unistd.h>
 
-#include "GreeterCursor.h"
-#include "GreeterScale.h"
+#include "LockCursor.h"
+#include "LockScale.h"
 #include "dbuslockagent.h"
 #include "dbuslockfrontservice.h"
 #include "freedesktopscreensaver.h"
@@ -63,12 +63,12 @@
 
 namespace {
 
-const QString kGxdeDisplayManagerService =
-    QStringLiteral("top.gxde.DisplayManager");
-const QString kGxdeDisplayManagerPath =
-    QStringLiteral("/top/gxde/DisplayManager");
-const QString kGxdeDisplayManagerInterface =
-    QStringLiteral("top.gxde.DisplayManager");
+const QString kGxdeLockService =
+    QStringLiteral("top.gxde.Lock");
+const QString kGxdeLockPath =
+    QStringLiteral("/top/gxde/Lock");
+const QString kGxdeLockInterface =
+    QStringLiteral("top.gxde.Lock");
 const QString kDeepinLockService =
     QStringLiteral("com.deepin.dde.lockFront");
 const QString kDeepinLockPath =
@@ -108,7 +108,7 @@ void configureLayerShell(QQuickWindow* window) {
 
   layerWindow->setScreenConfiguration(
       LayerShellQt::Window::ScreenFromQWindow);
-  layerWindow->setScope(QStringLiteral("gxdm-lock-neo"));
+  layerWindow->setScope(QStringLiteral("gxde-lock-neo"));
   layerWindow->setLayer(LayerShellQt::Window::LayerOverlay);
   LayerShellQt::Window::Anchors anchors;
   anchors.setFlag(LayerShellQt::Window::AnchorTop);
@@ -163,11 +163,11 @@ class DemoLockWorker : public LockWorker {
 };
 
 void requestShowFromExistingLocker() {
-  QDBusInterface gxdm(kGxdeDisplayManagerService, kGxdeDisplayManagerPath,
-                      kGxdeDisplayManagerInterface,
+  QDBusInterface gxdeLock(kGxdeLockService, kGxdeLockPath,
+                      kGxdeLockInterface,
                       QDBusConnection::sessionBus());
-  if (gxdm.isValid()) {
-    gxdm.asyncCall(QStringLiteral("Show"));
+  if (gxdeLock.isValid()) {
+    gxdeLock.asyncCall(QStringLiteral("Show"));
     return;
   }
 
@@ -198,19 +198,19 @@ int main(int argc, char* argv[]) {
     qputenv("QSG_USE_SIMPLE_ANIMATION_DRIVER", QByteArrayLiteral("1"));
   }
 
-  GxdmGreeterCursor::applyConfiguredTheme();
+  LockCursor::applyConfiguredTheme();
   if (useX11) {
-    GxdmGreeterScale::applyX11ScaleFactors();
+    LockScale::applyX11ScaleFactors();
   } else {
-    GxdmGreeterCursor::enforceWaylandCursorConfig();
-    GxdmGreeterScale::applyThemeScale();
+    LockCursor::enforceWaylandCursorConfig();
+    LockScale::applyThemeScale();
   }
 
   QQuickWindow::setDefaultAlphaBuffer(true);
   QGuiApplication app(argc, argv);
   app.setQuitOnLastWindowClosed(false);
   app.setOrganizationName(QStringLiteral("deepin"));
-  app.setApplicationName(QStringLiteral("gxdm-lock-neo"));
+  app.setApplicationName(QStringLiteral("gxde-lock-neo"));
   app.setApplicationVersion(QStringLiteral("1.0"));
 
   // The shared LockWorker reports PAM failures with tr() strings translated
@@ -257,7 +257,7 @@ int main(int argc, char* argv[]) {
         QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
     if (runtimeDir.isEmpty()) runtimeDir = QDir::tempPath();
     instanceLock = std::make_unique<QLockFile>(
-        QDir(runtimeDir).filePath(QStringLiteral("gxdm-lock-neo.lock")));
+        QDir(runtimeDir).filePath(QStringLiteral("gxde-lock-neo.lock")));
     if (!instanceLock->tryLock(0)) {
       if (!runDaemon) requestShowFromExistingLocker();
       return 0;
@@ -284,7 +284,7 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<DBusLockFrontService> frontService;
   std::unique_ptr<FreedesktopScreenSaver> screenSaver;
   std::unique_ptr<LockShortcutManager> shortcutManager;
-  std::unique_ptr<GxdeDisplayManagerService> displayManagerService;
+  std::unique_ptr<GxdeLockService> displayManagerService;
 
   if (!demo) {
     QDBusConnection sessionBus = QDBusConnection::sessionBus();
@@ -296,13 +296,13 @@ int main(int argc, char* argv[]) {
         std::make_unique<FreedesktopScreenSaver>(agent.get(), &model);
     shortcutManager = std::make_unique<LockShortcutManager>(&model);
     displayManagerService =
-        std::make_unique<GxdeDisplayManagerService>(shortcutManager.get());
+        std::make_unique<GxdeLockService>(shortcutManager.get());
 
-    if (!sessionBus.registerService(kGxdeDisplayManagerService) ||
-        !sessionBus.registerObject(kGxdeDisplayManagerPath,
+    if (!sessionBus.registerService(kGxdeLockService) ||
+        !sessionBus.registerObject(kGxdeLockPath,
                                    shortcutManager.get(),
                                    QDBusConnection::ExportAdaptors)) {
-      qWarning() << "Failed to register" << kGxdeDisplayManagerService
+      qWarning() << "Failed to register" << kGxdeLockService
                  << sessionBus.lastError();
       if (!runDaemon) requestShowFromExistingLocker();
       return 1;
@@ -335,14 +335,14 @@ int main(int argc, char* argv[]) {
   if (!demo) {
     gxde::lock::LockStylePaths stylePaths =
         gxde::lock::LockStyleResolver::DefaultPaths();
-    stylePaths.gxdmConfig =
-        qEnvironmentVariable("GXDM_LOCK_GXDM_CONF", stylePaths.gxdmConfig);
+    stylePaths.configFile =
+        qEnvironmentVariable("GXDE_LOCK_CONF", stylePaths.configFile);
     stylePaths.omgConfig =
-        qEnvironmentVariable("GXDM_LOCK_OMG_CONF", stylePaths.omgConfig);
+        qEnvironmentVariable("GXDE_LOCK_OMG_CONF", stylePaths.omgConfig);
     styleManager = std::make_unique<gxde::lock::LockStyleManager>(
         &model, gxde::lock::LockStyle::kModern, stylePaths);
     QObject::connect(displayManagerService.get(),
-                     &GxdeDisplayManagerService::LockScreenStyleChanged,
+                     &GxdeLockService::LockScreenStyleChanged,
                      styleManager.get(),
                      &gxde::lock::LockStyleManager::Refresh);
     QObject::connect(
@@ -352,7 +352,7 @@ int main(int argc, char* argv[]) {
           qInfo() << "Lock screen style changed; handing off to" << executable;
           QDBusConnection sessionBus = QDBusConnection::sessionBus();
           const QStringList names{
-              kGxdeDisplayManagerService,
+              kGxdeLockService,
               kDeepinLockService,
               QStringLiteral("org.freedesktop.ScreenSaver"),
           };

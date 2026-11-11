@@ -1,9 +1,0 @@
-load("//bazel/qt:qt.bzl", "qt_lrelease_all")
-
-package(default_visibility = ["//visibility:public"])
-
-# Compile all greeter/components translations to qm
-qt_lrelease_all(
-    name = "qm",
-    ts_files = glob(["*.ts"]),
-)

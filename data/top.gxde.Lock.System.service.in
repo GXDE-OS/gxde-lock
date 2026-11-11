@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=top.gxde.Lock
+Exec=@CMAKE_INSTALL_FULL_LIBEXECDIR@/gxde-lock-system
+User=root

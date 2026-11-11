@@ -43,7 +43,7 @@ bool FingerprintServiceInstalled() {
   for (const char* dir : {"/etc/pam.d/", "/usr/lib/pam.d/",
                           "/usr/local/etc/pam.d/"}) {
     if (QFile::exists(QLatin1String(dir) +
-                      QLatin1String("gxdm-fingerprint"))) {
+                      QLatin1String("gxde-lock-fingerprint"))) {
       return true;
     }
   }
@@ -56,7 +56,7 @@ void ProbeEnrolledFingers(const QString& user, QObject* context,
                           std::function<void(bool available)> done) {
   if (!FingerprintServiceInstalled()) {
     // Runs would fail on PAM's "other" service; don't offer the finger.
-    qDebug() << "(Fingerprint) no gxdm-fingerprint PAM service";
+    qDebug() << "(Fingerprint) no gxde-lock-fingerprint PAM service";
     QTimer::singleShot(0, context, [done] { done(false); });
     return;
   }

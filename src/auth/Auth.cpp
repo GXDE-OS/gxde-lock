@@ -105,7 +105,7 @@ namespace SDDM {
         static std::unique_ptr<Auth::SocketServer> self;
         if (!self) {
             self.reset(new SocketServer());
-            self->listen(QStringLiteral("gxdm-auth-%1").arg(QUuid::createUuid().toString(QUuid::WithoutBraces)));
+            self->listen(QStringLiteral("gxde-lock-auth-%1").arg(QUuid::createUuid().toString(QUuid::WithoutBraces)));
         }
         return self.get();
     }
@@ -435,7 +435,7 @@ namespace SDDM {
             args << QStringLiteral("--greeter");
         if (d->fingerprint)
             args << QStringLiteral("--fingerprint");
-        d->child->start(QStringLiteral("%1/gxdm-helper").arg(QStringLiteral(LIBEXEC_INSTALL_DIR)), args);
+        d->child->start(QStringLiteral("%1/gxde-lock-auth-helper").arg(QStringLiteral(LIBEXEC_INSTALL_DIR)), args);
     }
 
     void Auth::stop() {

@@ -1,11 +1,11 @@
-"""Bazel build file for GXDE Display Manager
+"""Bazel build file for gxde-lock
 
 Please note that builds MUST run with --spawn_strategy=local so that /usr is
 visible.
 """
 
 module(
-    name = "gxdm",
+    name = "gxde-lock",
     version = "0.21.0",
 )
 

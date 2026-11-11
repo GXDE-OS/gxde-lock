@@ -1,35 +1,20 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: GXDE Display Manager
-Source: https://github.com/GXDE-OS/gxde-display-manager-se
+Upstream-Name: gxde-lock
+Source: https://github.com/GXDE-OS/gxde-lock
 
 Files: *
 Copyright: 2013-2024 SDDM contributors (see CONTRIBUTORS)
            2024-2026 GXDE OS contributors
 License: GPL-3+
 
-Files: src/greeter-classic/*
+Files: src/lock-classic/*
 Copyright: 2024-2026 GXDE OS contributors
 License: GPL-3+
 Comment: Unless stated otherwise in individual file headers.
 
-Files: data/themes/*.qml
-       components/*.qml
-Copyright: 2013-2024 SDDM contributors
-License: MIT
-
-Files: data/themes/*.png
-       data/themes/*.jpg
-       data/faces/*
-       data/flags/*
-Copyright: 2013-2024 SDDM contributors
-License: CC-BY-3.0
-
 Files: debian/*
-Copyright: 2000-2001 Branden Robinson
-           2026 CharOfString <root@charofstring.cc>
-License: GPL-2+
-Comment: The debconf handling of shared/default-x-display-manager is derived
- from the xdm/lightdm/sddm Debian packaging scripts.
+Copyright: 2026 CharOfString <root@charofstring.cc>
+License: GPL-3+
 
 License: GPL-2+
  This program is free software; you can redistribute it and/or modify
@@ -58,26 +43,3 @@ License: GPL-3+
  .
  On Debian systems, the complete text of the GNU General Public License
  version 3 can be found in "/usr/share/common-licenses/GPL-3".
-
-License: MIT
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
- .
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
- .
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- SOFTWARE.
-
-License: CC-BY-3.0
- The full text of the Creative Commons Attribution 3.0 Unported licence can be
- found in the LICENSE.CC-BY-3.0 file shipped in the upstream source tree.

@@ -1,63 +1,41 @@
-install(DIRECTORY "flags" DESTINATION "${DATA_INSTALL_DIR}")
-
-install(FILES
-    "org.freedesktop.DisplayManager.conf"
-    DESTINATION "${DBUS_CONFIG_DIR}"
-    RENAME ${DBUS_CONFIG_FILENAME}
-)
-
-install(FILES
-    "top.gxde.DisplayManager.conf"
-    DESTINATION "${DBUS_CONFIG_DIR}"
-)
-
+# Session bus: the lockers own top.gxde.Lock and are activated on demand.
 configure_file(
-    "top.gxde.DisplayManager.service.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/top.gxde.DisplayManager.service"
+    "top.gxde.Lock.service.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/session/top.gxde.Lock.service"
     @ONLY
 )
-configure_file(
-    "gxdm-lock-classic.desktop.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/gxdm-lock-classic.desktop"
-    @ONLY
-)
-
 install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/top.gxde.DisplayManager.service"
+    "${CMAKE_CURRENT_BINARY_DIR}/session/top.gxde.Lock.service"
     DESTINATION "${CMAKE_INSTALL_FULL_DATADIR}/dbus-1/services"
 )
 
+# System bus: the root helper owns top.gxde.Lock and is activated on demand.
+configure_file(
+    "top.gxde.Lock.System.service.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/system/top.gxde.Lock.service"
+    @ONLY
+)
 install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/gxdm-lock-classic.desktop"
+    "${CMAKE_CURRENT_BINARY_DIR}/system/top.gxde.Lock.service"
+    DESTINATION "${CMAKE_INSTALL_FULL_DATADIR}/dbus-1/system-services"
+)
+install(FILES
+    "top.gxde.Lock.conf"
+    DESTINATION "${DBUS_SYSTEM_CONFIG_DIR}"
+)
+
+configure_file(
+    "gxde-lock.desktop.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/gxde-lock.desktop"
+    @ONLY
+)
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/gxde-lock.desktop"
     DESTINATION "${CMAKE_INSTALL_SYSCONFDIR}/xdg/autostart"
 )
 
+# Oh-My-GXDE integration; third-party packaging relies on this path.
 install(FILES
-    "faces/root.face.icon.png"
-    DESTINATION "${DATA_INSTALL_DIR}/faces"
-    RENAME "root.face.icon"
+    "configs/OMG.conf"
+    DESTINATION "${CMAKE_INSTALL_SYSCONFDIR}/gxde-lock"
 )
-
-install(FILES
-    "faces/default.face.icon.png"
-    DESTINATION "${DATA_INSTALL_DIR}/faces"
-    RENAME ".face.icon"
-)
-
-install(FILES
-    "scripts/Xsession"
-    "scripts/Xsetup"
-    "scripts/Xstop"
-    "scripts/wayland-session"
-    DESTINATION "${DATA_INSTALL_DIR}/scripts"
-    PERMISSIONS
-        OWNER_READ OWNER_WRITE OWNER_EXECUTE
-        GROUP_READ GROUP_EXECUTE
-        WORLD_READ WORLD_EXECUTE
-)
-
-if(BUILD_MAN_PAGES)
-    add_subdirectory(man)
-endif()
-add_subdirectory(themes)
-add_subdirectory(translations)

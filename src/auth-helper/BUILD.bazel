@@ -1,0 +1,34 @@
+load("//bazel/qt:qt.bzl", "qt_cc_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+# Authentication-only PAM helper, run unprivileged by the lockers.
+qt_cc_binary(
+    name = "gxde-lock-auth-helper",
+    srcs = [
+        "Backend.cpp",
+        "HelperApp.cpp",
+        "backend/PamBackend.cpp",
+        "backend/PamHandle.cpp",
+    ] + glob([
+        "*.h",
+        "backend/*.h",
+    ]),
+    includes = [
+        ".",
+        "backend",
+    ],
+    linkopts = [
+        "-lpam",
+        "-lpam_misc",
+    ],
+    moc_hdrs = [
+        "Backend.h",
+        "HelperApp.h",
+        "backend/PamBackend.h",
+    ],
+    deps = [
+        "//src/auth:auth",
+        "//src/common:common",
+    ],
+)

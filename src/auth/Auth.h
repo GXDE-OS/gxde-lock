@@ -136,7 +136,7 @@ namespace SDDM {
         void setGreeter(bool on = true);
 
         /**
-         * Authenticate by fingerprint: the helper uses the gxdm-fingerprint
+         * Authenticate by fingerprint: the helper uses the gxde-lock-fingerprint
          * PAM service (pam_fprintd) instead of the password stack.
          */
         void setFingerprint(bool on = true);

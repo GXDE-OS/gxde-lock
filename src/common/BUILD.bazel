@@ -1,10 +1,10 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("//bazel/qt:qt.bzl", "gxdm_configure_file", "qt_cc_library")
+load("//bazel/qt:qt.bzl", "lock_configure_file", "qt_cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
 # Generated Constants.h
-gxdm_configure_file(
+lock_configure_file(
     name = "constants_h",
     src = "Constants.h.in",
     out = "Constants.h",
@@ -16,70 +16,42 @@ cc_library(
     includes = ["."],
 )
 
-# Shared sources pulled
+# Shared sources pulled into the auth helper.
 qt_cc_library(
     name = "common",
-    srcs = [
-        "Configuration.cpp",
-        "ConfigReader.cpp",
-        "SafeDataStream.cpp",
-        "Session.cpp",
-        "SocketWriter.cpp",
-        "ThemeConfig.cpp",
-        "ThemeMetadata.cpp",
-        "XAuth.cpp",
-        "SignalHandler.cpp",
-        "VirtualTerminal.cpp",
-    ],
+    srcs = ["SafeDataStream.cpp"],
     hdrs = [
-        "Configuration.h",
-        "ConfigReader.h",
         "MessageHandler.h",
-        "Messages.h",
         "SafeDataStream.h",
-        "Session.h",
-        "SocketWriter.h",
-        "ThemeConfig.h",
-        "ThemeMetadata.h",
-        "SignalHandler.h",
-        "VirtualTerminal.h",
-        "XAuth.h",
     ],
-    moc_hdrs = [
-        "ThemeConfig.h",
-        "ThemeMetadata.h",
-        "SignalHandler.h",
-    ],
-    linkopts = ["-lXau"],
     deps = [":constants"],
 )
 
 # Wallpaper, cursor, scale and OS defaults shared by the classic and neo
-# greeters.
+# lockers.
 qt_cc_library(
-    name = "greeter_appearance",
+    name = "lock_appearance",
     srcs = [
-        "GreeterAppearance.cpp",
-        "GreeterCursor.cpp",
-        "GreeterScale.cpp",
+        "LockAppearance.cpp",
+        "LockCursor.cpp",
+        "LockScale.cpp",
         "SystemDefaults.cpp",
     ],
     hdrs = [
-        "GreeterAppearance.h",
-        "GreeterCursor.h",
-        "GreeterScale.h",
+        "LockAppearance.h",
+        "LockCursor.h",
+        "LockScale.h",
         "SystemDefaults.h",
     ],
     linkopts = [
         "-lX11",
-        "-lXcursor",
-        "-lXfixes",
         "-lXrandr",
     ],
+    deps = [":constants"],
 )
 
 # Fingerprint login next to the password: the state machine shared by the lock
-# screen and the greeter, and the fprintd probe shared by the lock and daemon.
+# screens, and the fprintd probe.
 qt_cc_library(
     name = "fingerprint_session",
     srcs = ["FingerprintSession.cpp"],
