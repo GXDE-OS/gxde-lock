@@ -1,7 +1,7 @@
 # Maintainer: CharOfString <root@charofstring.cc>
 pkgname=gxde-lock-git
 pkgver=2.0.0
-pkgrel=2
+pkgrel=3
 pkgdesc='GXDE lock screen for X11 and Wayland, split out of the GXDE Display Manager'
 arch=('x86_64' 'aarch64')
 url="https://github.com/GXDE-OS/gxde-lock"
