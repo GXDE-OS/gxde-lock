@@ -1,7 +1,7 @@
 # Maintainer: CharOfString <root@charofstring.cc>
 pkgname=gxde-lock-git
 pkgver=2.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc='GXDE lock screen for X11 and Wayland, split out of the GXDE Display Manager'
 arch=('x86_64' 'aarch64')
 url="https://github.com/GXDE-OS/gxde-lock"
@@ -18,7 +18,6 @@ backup=('etc/gxde-lock/OMG.conf' 'etc/pam.d/gxde-lock' 'etc/pam.d/gxde-lock-fing
 source=()
 sha512sums=()
 
-# 直接使用 PKGBUILD 所在的 git 仓库作为源码 ・ Build from the git checkout this PKGBUILD lives in.
 _srcroot() {
   git -C "$startdir" rev-parse --show-toplevel
 }

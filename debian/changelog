@@ -1,3 +1,9 @@
+gxde-lock (2.0.0-gxde2) unstable; urgency=medium
+
+  * 改进内存安全
+
+ -- CharOfString <root@charofstring.cc>  Wed, 11 Nov 2026 18:27:18 -0600
+
 gxde-lock (2.0.0-gxde1) unstable; urgency=medium
 
   * 修复X11锁定时仅锁定主屏幕的问题
