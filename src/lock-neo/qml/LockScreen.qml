@@ -112,6 +112,9 @@ Item {
 
   function startReveal() {
     if (!screen.windowVisible || wallpaper.status !== Image.Ready) return
+    // DPR reloads report Ready again; do not fade an already shown wallpaper
+    // back in from black.
+    if (revealAnimation.running || screen.revealProgress >= 1) return
     revealAnimation.restart()
   }
 
@@ -272,9 +275,15 @@ Item {
     smooth: true
     mipmap: true
     onStatusChanged: if (status === Image.Ready) screen.startReveal()
-    visible: source.toString() !== "" && status === Image.Ready
+    // A DPR change (outputs re-announcing their scale after resume, a move to
+    // another output) makes Qt reload the image: status drops to Loading while
+    // the old pixmap keeps painting. Nothing below may flip on that. Qt walks
+    // a copy of the child list while it notifies items of the new DPR; tearing
+    // the layer effect down mid-walk leaves a dangling sibling there, and the
+    // locker segfaults on every resume.
+    visible: source.toString() !== "" && status !== Image.Error
     opacity: screen.revealProgress
-    layer.enabled: visible
+    layer.enabled: true
     layer.smooth: true
     layer.effect: MultiEffect {
       objectName: "wallpaperEffect"

@@ -65,8 +65,11 @@ Rectangle {
     cache: true
     smooth: true
     mipmap: true
-    visible: source.toString() !== "" && status === Image.Ready
-    layer.enabled: visible
+    // Keep painting the old pixmap while a DPR change reloads it, and never
+    // toggle the layer on load status: Qt walks a copy of the child list for
+    // DPR updates, and an effect destroyed mid-walk crashes it.
+    visible: source.toString() !== "" && status !== Image.Error
+    layer.enabled: true
     layer.smooth: true
     layer.effect: MultiEffect {
       maskEnabled: true
