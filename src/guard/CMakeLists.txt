@@ -17,6 +17,8 @@ add_executable(gxde-lock-guard
     notice_window.cc
     notice_window.h
     "${CMAKE_SOURCE_DIR}/src/common/LockState.cpp"
+    "${CMAKE_SOURCE_DIR}/src/common/LockTranslations.cpp"
+    "${CMAKE_SOURCE_DIR}/src/common/LockTranslations.h"
     "${CMAKE_SOURCE_DIR}/src/common/LockState.h"
     "${CMAKE_SOURCE_DIR}/src/common/LogindSession.cpp"
     "${CMAKE_SOURCE_DIR}/src/common/LogindSession.h"

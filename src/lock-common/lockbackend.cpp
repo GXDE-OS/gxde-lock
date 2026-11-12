@@ -289,8 +289,8 @@ void LockBackend::onAuthFinished(bool success) {
     emit Authenticated();
   } else {
     if (error_message_.isEmpty()) {
-      // Same source text and context as LockWorker so the gxde-session-ui
-      // translation covers both.
+      // Same source text and context as LockWorker so one catalog entry
+      // covers both.
       setErrorMessage(QCoreApplication::translate("LockWorker",
                                                   "Wrong Password"));
     }

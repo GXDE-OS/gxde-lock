@@ -23,6 +23,7 @@
 #define BIN_INSTALL_DIR             "@CMAKE_INSTALL_FULL_BINDIR@"
 #define LIBEXEC_INSTALL_DIR         "@CMAKE_INSTALL_FULL_LIBEXECDIR@"
 #define STATE_DIR                   "@STATE_DIR@"
+#define TRANSLATIONS_DIR            "@CMAKE_INSTALL_FULL_DATADIR@/gxde-lock/translations"
 
 #define CONFIG_FILE                 "@CONFIG_FILE@"
 #define OMG_CONFIG_FILE             "@OMG_CONFIG_FILE@"

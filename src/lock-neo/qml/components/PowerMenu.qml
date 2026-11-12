@@ -22,10 +22,10 @@ Popup {
   signal triggered(string action)
 
   readonly property var allActions: [
-    { action: "reboot", label: qsTr("重启"), icon: "qrc:/lock/icons/power-reboot.svg" },
-    { action: "shutdown", label: qsTr("关机"), icon: "qrc:/lock/icons/power-shutdown.svg" },
-    { action: "suspend", label: qsTr("待机"), icon: "qrc:/lock/icons/power-suspend.svg" },
-    { action: "hibernate", label: qsTr("休眠"), icon: "qrc:/lock/icons/power-hibernate.svg" }
+    { action: "reboot", label: qsTr("Restart"), icon: "qrc:/lock/icons/power-reboot.svg" },
+    { action: "shutdown", label: qsTr("Shut Down"), icon: "qrc:/lock/icons/power-shutdown.svg" },
+    { action: "suspend", label: qsTr("Suspend"), icon: "qrc:/lock/icons/power-suspend.svg" },
+    { action: "hibernate", label: qsTr("Hibernate"), icon: "qrc:/lock/icons/power-hibernate.svg" }
   ]
 
   readonly property var actions: {
@@ -90,7 +90,7 @@ Popup {
       width: parent.width
       leftPadding: 14
       bottomPadding: 6
-      text: qsTr("电源")
+      text: qsTr("Power")
       color: "#8fc9d5e8"
       font.pixelSize: 11
       renderType: Text.NativeRendering

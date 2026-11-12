@@ -355,7 +355,7 @@ Item {
     anchors.top: clock.bottom
     anchors.topMargin: 16
     visible: !screen.primaryScreen
-    text: qsTr("屏幕已锁定")
+    text: qsTr("Screen locked")
     pixelSize: 18
     weight: Font.Light
     shadowOpacity: 0.22
@@ -387,7 +387,7 @@ Item {
     anchors.bottom: parent.bottom
     anchors.bottomMargin: 28
     visible: screen.testMode && screen.primaryScreen && !screen.passwordStage
-    text: qsTr("演示模式：按任意键继续，Esc 退出")
+    text: qsTr("Demo mode: press any key to continue, Esc to quit")
     color: "#99c9d5e8"
     font.pixelSize: 12
     renderType: Text.NativeRendering
@@ -416,14 +416,14 @@ Item {
         && screen.backend.kbLayouts.length > 1
       label: screen.backend && screen.backend.currentKbLayout
         ? screen.backend.currentKbLayout.toUpperCase() : ""
-      accessibleName: qsTr("键盘布局")
+      accessibleName: qsTr("Keyboard layout")
       onClicked: screen.cycleLayout()
     }
 
     IconButton {
       visible: screen.backend && screen.backend.userSwitchAvailable
       source: "qrc:/lock/icons/user-switch.svg"
-      accessibleName: qsTr("切换用户")
+      accessibleName: qsTr("Switch user")
       onClicked: {
         screen.closePopups()
         userSwitcher.open()
@@ -441,7 +441,7 @@ Item {
       source: mediaIndicator.volumeIcon(audio)
       padding: 7
       iconSize: 18
-      accessibleName: qsTr("音量")
+      accessibleName: qsTr("Volume")
       onClicked: {
         const wasOpen = screen.mediaCardRequested
         screen.closePopups()
@@ -463,13 +463,13 @@ Item {
     IconButton {
       visible: screen.virtualKeyboardAvailable
       source: "qrc:/icons/keyboard.svg"
-      accessibleName: qsTr("虚拟键盘")
+      accessibleName: qsTr("Virtual keyboard")
       onClicked: screen.keyboardRequested = !screen.keyboardRequested
     }
 
     IconButton {
       source: "qrc:/icons/power.svg"
-      accessibleName: qsTr("电源")
+      accessibleName: qsTr("Power")
       onClicked: {
         const wasOpen = powerMenu.opened
         screen.closePopups()

@@ -58,6 +58,9 @@ Window {
     id: lockScreen
 
     anchors.fill: parent
+    // Right-to-left translations (Arabic) mirror the whole layout.
+    LayoutMirroring.enabled: Qt.application.layoutDirection === Qt.RightToLeft
+    LayoutMirroring.childrenInherit: true
     backend: root.backend
     primaryScreen: root.primaryScreen
     virtualKeyboardAvailable: root.virtualKeyboardAvailable

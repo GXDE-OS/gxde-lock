@@ -132,6 +132,7 @@ configure_file("src/common/Constants.h.in" "src/common/Constants.h" IMMEDIATE @O
 add_subdirectory(data)
 add_subdirectory(services)
 add_subdirectory(src)
+add_subdirectory(translations)
 
 add_subdirectory(test)
 

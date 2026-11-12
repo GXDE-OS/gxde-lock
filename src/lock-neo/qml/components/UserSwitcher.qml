@@ -74,7 +74,7 @@ Popup {
     Text {
       width: parent.width
       leftPadding: 22
-      text: qsTr("选择用户")
+      text: qsTr("Select a user")
       color: "#f2f6ff"
       font.pixelSize: 15
       font.weight: Font.Medium
@@ -155,8 +155,8 @@ Popup {
           anchors.top: parent.top
           anchors.topMargin: 101
           text: userEntry.locked
-            ? qsTr("已锁定 %1 分钟").arg(userEntry.lockMinutes)
-            : (userEntry.isCurrent ? qsTr("当前用户") : "")
+            ? qsTr("Locked for %n minute(s)", "", userEntry.lockMinutes)
+            : (userEntry.isCurrent ? qsTr("Current user") : "")
           color: userEntry.locked ? "#ff9a8a" : "#8fc9d5e8"
           font.pixelSize: 10
           renderType: Text.NativeRendering

@@ -42,7 +42,7 @@ Rectangle {
 
     Text {
       anchors.verticalCenter: parent.verticalCenter
-      text: qsTr("%1 条新通知").arg(pill.count)
+      text: qsTr("%n new notification(s)", "", pill.count)
       color: "#f5f8ff"
       font.pixelSize: 14
       renderType: Text.NativeRendering

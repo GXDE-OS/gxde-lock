@@ -104,6 +104,24 @@ a plain notice instead, like Plasma does: switch to a text console, log in and
 run the `loginctl unlock-session <id>` (or `kill -USR1 <pid>`) command it
 displays, then switch back. There is deliberately no unlock shortcut.
 
+#### Compositor requirements
+On Wayland, recovery depends on the compositor:
+
+* **`ext-session-lock-v1`:** when a lock client dies, the compositor keeps
+  the session locked. The compositor must then let a new client lock the
+  session and take over the abandoned lock; otherwise neither the restarted
+  locker nor the crash notice can put anything on screen, and the user only
+  sees the compositor's own fallback (often a black screen). sway 1.10 does
+  this (verified; the log shows `Replacing abandoned lock`). If your
+  compositor cannot, it should at least draw its own message for an
+  abandoned lock, as KWin does on Plasma.
+* **`zwlr_layer_shell_v1` fallback:** the lock surfaces disappear together
+  with the crashed locker, so the session is briefly unlocked until
+  `gxde-lock-guard` has locked it again.
+
+X11 needs nothing from the window manager: the restarted locker and the
+notice use override-redirect windows and grab the keyboard and pointer.
+
 Lock right away:
 ```bash
 gxde-lock-classic                # or: gxde-lock-neo
@@ -187,6 +205,21 @@ See [docs/FINGERPRINT.md](./docs/FINGERPRINT.md) (Chinese).
 
 ## Contributing
 Issues and pull requests are welcome.
+
+### Translations
+Both lock screens and the crash notice use Qt's translation system
+(`tr()` / `qsTr()`, English source strings). The catalogs live in
+`translations/gxde-lock_<language>.ts`. The project ships Arabic, Chinese,
+English, French, Russian and Spanish, the six official UN languages. They are
+installed as `.qm` files under `/usr/share/gxde-lock/translations`.
+
+The lock screen follows `LANGUAGE`/`LANG`. The classic style switches to the
+language of the user it locks for. Right-to-left languages mirror the layout.
+
+After changing strings, refresh the catalogs with
+`cmake --build build --target gxde-lock-lupdate`, then translate the new
+entries in Qt Linguist. To add a language, add its code to
+`translations/CMakeLists.txt` and run the same target.
 
 ### Packaging for Other Distros
 Install `data/configs/OMG.conf` to `/etc/gxde-lock/` (CMake does this) and

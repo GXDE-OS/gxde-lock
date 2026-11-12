@@ -59,6 +59,8 @@
 #include <wayland-client.h>
 
 #include <memory>
+
+#include "LockTranslations.h"
 // PATCHS
 // Qt6: removed `#include <QDesktopWidget>` (QDesktopWidget no longer exists)
 // PATCHE
@@ -200,9 +202,7 @@ int main(int argc, char *argv[])
     DLogManager::registerConsoleAppender();
     DLogManager::registerFileAppender();
 
-    QTranslator translator;
-    translator.load("/usr/share/gxde-session-ui/translations/gxde-session-ui_" + QLocale::system().name());
-    app.installTranslator(&translator);
+    gxde::lock::InstallTranslations();
 
     QCommandLineParser cmdParser;
     cmdParser.addHelpOption();

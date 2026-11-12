@@ -30,7 +30,6 @@
 #include <QScreen>
 #include <QStandardPaths>
 #include <QTimer>
-#include <QTranslator>
 #include <QVariantMap>
 #include <QWindow>
 
@@ -46,6 +45,7 @@
 
 #include "LockCursor.h"
 #include "LockScale.h"
+#include "LockTranslations.h"
 #include "dbuslockagent.h"
 #include "dbuslockfrontservice.h"
 #include "freedesktopscreensaver.h"
@@ -213,15 +213,7 @@ int main(int argc, char* argv[]) {
   app.setApplicationName(QStringLiteral("gxde-lock-neo"));
   app.setApplicationVersion(QStringLiteral("1.0"));
 
-  // The shared LockWorker reports PAM failures with tr() strings translated
-  // by the classic session UI catalogue; load it here too.
-  QTranslator translator;
-  if (translator.load(
-          QStringLiteral("/usr/share/gxde-session-ui/translations/"
-                         "gxde-session-ui_") +
-          QLocale::system().name())) {
-    app.installTranslator(&translator);
-  }
+  gxde::lock::InstallTranslations();
 
   QCommandLineParser parser;
   parser.addHelpOption();

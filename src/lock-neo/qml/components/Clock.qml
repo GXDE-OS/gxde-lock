@@ -23,14 +23,9 @@ Item {
   readonly property real timeInkTop: time.inkTop
 
   function dateText(when) {
-    const locale = Qt.locale()
-    if (locale.name.startsWith("zh") || locale.name.startsWith("ja")) {
-      return Qt.formatDate(when, "M月d日") + " "
-        + locale.dayName(when.getDay(), Locale.LongFormat)
-    }
-    return locale.dayName(when.getDay(), Locale.LongFormat) + ", "
-      + locale.monthName(when.getMonth(), Locale.LongFormat) + " "
-      + when.getDate()
+    //: Date under the clock, without the year. A QDate::toString() format:
+    //: dddd = weekday, MMMM = month name, d = day.
+    return Qt.locale().toString(when, qsTr("dddd, MMMM d"))
   }
 
   implicitWidth: Math.max(time.width * time.scale, date.width)

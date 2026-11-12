@@ -20,6 +20,7 @@
 #include <utility>
 
 #include <QFont>
+#include <QGuiApplication>
 #include <QPainter>
 #include <QRect>
 
@@ -33,6 +34,7 @@ void NoticeWindow::paintEvent(QPaintEvent* event) {
   Q_UNUSED(event)
   const QRect area(0, 0, width(), height());
   QPainter painter(this);
+  painter.setLayoutDirection(QGuiApplication::layoutDirection());
   painter.fillRect(area, QColor(0x14, 0x16, 0x1c));
 
   QFont font = painter.font();

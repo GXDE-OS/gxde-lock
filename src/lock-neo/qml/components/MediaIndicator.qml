@@ -161,7 +161,7 @@ Rectangle {
         Text {
           width: parent.width
           text: card.media && card.media.title.length > 0
-            ? card.media.title : qsTr("未知曲目")
+            ? card.media.title : qsTr("Unknown track")
           color: "#f5f8ff"
           font.pixelSize: 14
           font.weight: Font.DemiBold
@@ -293,7 +293,7 @@ Rectangle {
           padding: 6
           iconSize: 24
           source: "qrc:/lock/icons/media-previous.svg"
-          accessibleName: qsTr("上一首")
+          accessibleName: qsTr("Previous")
           enabled: card.media !== null && card.media.canGoPrevious
           onClicked: card.media.Previous()
         }
@@ -312,7 +312,7 @@ Rectangle {
           padding: 7
           tint: "#1b2029"
           accessibleName: card.media && card.media.playing
-            ? qsTr("暂停") : qsTr("播放")
+            ? qsTr("Pause") : qsTr("Play")
           enabled: card.media !== null && card.media.canPlayPause
           onClicked: card.media.PlayPause()
 
@@ -331,7 +331,7 @@ Rectangle {
           padding: 6
           iconSize: 24
           source: "qrc:/lock/icons/media-next.svg"
-          accessibleName: qsTr("下一首")
+          accessibleName: qsTr("Next")
           enabled: card.media !== null && card.media.canGoNext
           onClicked: card.media.Next()
         }
@@ -348,7 +348,7 @@ Rectangle {
         padding: 9
         iconSize: 18
         source: card.volumeIcon(card.audio)
-        accessibleName: qsTr("音量")
+        accessibleName: qsTr("Volume")
         opacity: card.volumeShown || hovered ? 1.0 : 0.6
         onClicked: {
           card.volumeExpanded = !card.volumeShown
@@ -391,7 +391,7 @@ Rectangle {
         iconSize: 18
         source: card.volumeIcon(card.audio)
         accessibleName: card.audio && card.audio.muted
-          ? qsTr("取消静音") : qsTr("静音")
+          ? qsTr("Unmute") : qsTr("Mute")
         onClicked: if (card.audio) card.audio.ToggleMute()
       }
 
@@ -409,7 +409,7 @@ Rectangle {
         implicitHeight: 24
         label: "\u2212"
         tint: "#c9d5e8"
-        accessibleName: qsTr("减小音量")
+        accessibleName: qsTr("Volume down")
         autoRepeat: true
         enabled: current > 0
         onClicked: card.audio.SetVolume(Math.max(0, current - 0.05))
@@ -426,7 +426,7 @@ Rectangle {
         implicitHeight: 24
         label: "+"
         tint: "#c9d5e8"
-        accessibleName: qsTr("增大音量")
+        accessibleName: qsTr("Volume up")
         autoRepeat: true
         enabled: card.audio !== null && volumeDown.current < card.audio.maxVolume
         onClicked: card.audio.SetVolume(

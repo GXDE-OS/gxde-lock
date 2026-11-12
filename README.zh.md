@@ -101,6 +101,20 @@ cd arch && makepkg -si  # Arch Linux
 `loginctl unlock-session <id>`（或 `kill -USR1 <pid>`），再切换回来。
 刻意不提供解锁快捷键。
 
+#### 对合成器的要求
+Wayland 下能否恢复取决于合成器：
+
+* **`ext-session-lock-v1`：** 锁屏客户端死掉后，合成器会保持会话锁定。
+  这时合成器必须允许新的客户端重新加锁、接管这个被放弃的锁；否则重新拉起的
+  锁屏和崩溃提示都无法显示，用户只能看到合成器自己的兜底画面（通常是黑屏）。
+  sway 1.10 支持（已验证，日志中会出现 `Replacing abandoned lock`）。如果
+  合成器做不到，至少应在锁被放弃时自己画出提示，Plasma 下的 KWin 就是这样做的。
+* **`zwlr_layer_shell_v1` 回退方案：** 锁屏崩溃时锁面随之消失，在
+  `gxde-lock-guard` 重新加锁之前，会话会短暂处于未锁定状态。
+
+X11 下对窗口管理器没有要求：重新拉起的锁屏和崩溃提示都使用
+override-redirect 窗口，并抓取键盘和鼠标。
+
 立即锁屏：
 ```bash
 gxde-lock-classic                # 或：gxde-lock-neo
@@ -180,6 +194,19 @@ GSettings 桌面壁纸，最后是全局锁屏壁纸或 GXDE 默认壁纸。
 
 ## 贡献
 欢迎提交 Issue 与 Pull Request。
+
+### 翻译
+两种锁屏样式与崩溃提示都使用 Qt 的翻译机制（`tr()` / `qsTr()`，源文为英文）。
+翻译文件位于 `translations/gxde-lock_<语言>.ts`。目前提供联合国六种工作语言：
+阿拉伯语、中文、英语、法语、俄语、西班牙语。它们以 `.qm` 格式安装到
+`/usr/share/gxde-lock/translations`。
+
+锁屏跟随 `LANGUAGE`/`LANG`。经典样式会切换到被锁定用户的语言。
+从右到左的语言会镜像整个布局。
+
+修改字符串后，运行 `cmake --build build --target gxde-lock-lupdate`
+更新翻译文件，再用 Qt Linguist 翻译新增条目。新增语言时，在
+`translations/CMakeLists.txt` 中加入语言代码，再运行同一目标。
 
 ### 打包注意事项
 请将 `data/configs/OMG.conf` 安装到 `/etc/gxde-lock/`（CMake 会自动安装），

@@ -2,6 +2,7 @@
 
 #include "controlwidget.h"
 #include "LockAppearance.h"
+#include "LockTranslations.h"
 #include "userinputwidget.h"
 #include "sessionbasemodel.h"
 #include "userframe.h"
@@ -25,7 +26,6 @@ LockContent::LockContent(SessionBaseModel * const model, QWidget *parent)
     : SessionBaseWindow(parent)
     , m_model(model)
     , m_virtualKB(nullptr)
-    , m_translator(new QTranslator)
 {
     m_controlWidget = new ControlWidget;
     m_userInputWidget = new UserInputWidget;
@@ -156,11 +156,10 @@ void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
 {
     if (user.get() == nullptr) return; // if dbus is async
 
-    // set user language
-    qApp->removeTranslator(m_translator);
+    // Follow the locked user's language (AccountsService), falling back to
+    // the session's.
     const QString locale { user->locale().split(".").first() };
-    m_translator->load("/usr/share/gxde-session-ui/translations/gxde-session-ui_" + QLocale(locale.isEmpty() ? "en_US" : locale).name());
-    qApp->installTranslator(m_translator);
+    gxde::lock::InstallTranslations(locale.isEmpty() ? QLocale::system() : QLocale(locale));
 
     for (auto connect : m_currentUserConnects) {
         m_user.get()->disconnect(connect);

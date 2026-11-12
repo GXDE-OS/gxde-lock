@@ -22,12 +22,14 @@
 #include <unistd.h>
 #include <wayland-client.h>
 
+#include <memory>
+
 #include <QCoreApplication>
 #include <QDebug>
 #include <QGuiApplication>
-#include <QLocale>
 #include <QScreen>
 #include <QSocketNotifier>
+#include <QStringList>
 #include <QTimer>
 
 #include "notice_window.h"
@@ -65,7 +67,8 @@ Display* X11Display() {
 
 BrokenNotice::BrokenNotice(QObject* parent)
     : QObject(parent),
-      use_x11_(QGuiApplication::platformName().startsWith(QLatin1String("xcb"))) {
+      use_x11_(QGuiApplication::platformName().startsWith(
+          QLatin1String("xcb"))) {
   if (pipe2(g_unlock_pipe, O_CLOEXEC | O_NONBLOCK) == 0) {
     unlock_signal_ = new QSocketNotifier(g_unlock_pipe[0],
                                          QSocketNotifier::Read, this);
@@ -131,42 +134,30 @@ bool BrokenNotice::Start() {
 }
 
 QString BrokenNotice::Message() const {
-  const bool chinese = QLocale::system().language() == QLocale::Chinese;
   const uint vt = logind_.VtNumber();
   const QString console =
-      vt > 0 ? QStringLiteral("Ctrl+Alt+F%1").arg(vt == 2 ? 3 : 2)
-             : QStringLiteral("Ctrl+Alt+F2");
+      QStringLiteral("Ctrl+Alt+F%1").arg(vt == 2 ? 3 : 2);
   const QString kill_command =
       QStringLiteral("kill -USR1 %1").arg(QCoreApplication::applicationPid());
 
-  QString text;
-  if (chinese) {
-    text = QStringLiteral("GXDE Lock遭遇反复崩溃，系统无法解锁。\n\n"
-                          "请按下%1切换到TTY，并于登录后执行：\n\n")
-               .arg(console);
-    if (logind_.IsValid()) {
-      text += QStringLiteral("loginctl unlock-session %1\n\n或：%2\n\n")
-                  .arg(logind_.Id(), kill_command);
-    } else {
-      text += kill_command + QStringLiteral("\n\n");
-    }
-    text += vt > 0 ? QStringLiteral("随后按Ctrl+Alt+F%1回到这里").arg(vt)
-                   : QStringLiteral("随后切换回图形会话");
+  QStringList lines;
+  lines << tr("GXDE Lock crashed repeatedly and cannot unlock the system.");
+  //: %1 is a key combination such as Ctrl+Alt+F3.
+  lines << tr("Press %1 to switch to a TTY, log in and run:").arg(console);
+  if (logind_.IsValid()) {
+    lines << QStringLiteral("loginctl unlock-session %1").arg(logind_.Id());
+    //: An alternative command; %1 is "kill -USR1 <pid>".
+    lines << tr("or: %1").arg(kill_command);
   } else {
-    text = QStringLiteral(
-               "GXDE Lock crashed repeatedly and cannot unlock the system.\n\n"
-               "Press %1 to switch to a TTY, log in and run:\n\n")
-               .arg(console);
-    if (logind_.IsValid()) {
-      text += QStringLiteral("loginctl unlock-session %1\n\nor: %2\n\n")
-                  .arg(logind_.Id(), kill_command);
-    } else {
-      text += kill_command + QStringLiteral("\n\n");
-    }
-    text += vt > 0 ? QStringLiteral("Then return with Ctrl+Alt+F%1.").arg(vt)
-                   : QStringLiteral("Then switch back to this session.");
+    lines << kill_command;
   }
-  return text;
+  if (vt > 0) {
+    //: %1 is the number of this session's virtual terminal (Ctrl+Alt+F%1).
+    lines << tr("Then return with Ctrl+Alt+F%1.").arg(vt);
+  } else {
+    lines << tr("Then switch back to this session.");
+  }
+  return lines.join(QStringLiteral("\n\n"));
 }
 
 void BrokenNotice::AddScreen(QScreen* screen) {

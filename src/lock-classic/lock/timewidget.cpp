@@ -27,6 +27,7 @@
 
 #include <QVBoxLayout>
 #include <QDateTime>
+#include <QLocale>
 #include <QFontDatabase>
 #include <QSettings>
 
@@ -66,7 +67,10 @@ TimeWidget::TimeWidget(QWidget *parent)
 
 void TimeWidget::refreshTime()
 {
-    m_timeLabel->setText(QDateTime::currentDateTime().toString(tr("hh:mm")));
-    m_dateLabel->setText(QDateTime::currentDateTime().toString(tr("yyyy-MM-dd dddd")));
+    // QDateTime::toString(format) always uses the C locale; QLocale() follows
+    // the language InstallTranslations() picked.
+    const QDateTime now = QDateTime::currentDateTime();
+    m_timeLabel->setText(QLocale().toString(now, tr("hh:mm")));
+    m_dateLabel->setText(QLocale().toString(now, tr("yyyy-MM-dd dddd")));
 }
 

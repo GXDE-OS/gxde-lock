@@ -34,7 +34,7 @@ Item {
     ignoreUnknownSignals: true
     function onFingerprintChanged() {
       if (card.backend.fingerprintGaveUp)
-        card.errorText = qsTr("指纹多次不匹配，请输入密码")
+        card.errorText = qsTr("Fingerprint did not match too many times. Enter your password.")
     }
   }
 
@@ -52,11 +52,32 @@ Item {
 
   function powerLabel(action) {
     switch (action) {
-    case "shutdown": return qsTr("关机")
-    case "reboot": return qsTr("重启")
-    case "suspend": return qsTr("待机")
-    case "hibernate": return qsTr("休眠")
+    case "shutdown": return qsTr("Shut Down")
+    case "reboot": return qsTr("Restart")
+    case "suspend": return qsTr("Suspend")
+    case "hibernate": return qsTr("Hibernate")
     default: return action
+    }
+  }
+
+  // Whole sentences per action: word order differs between languages.
+  function powerProgress(action) {
+    switch (action) {
+    case "shutdown": return qsTr("Shutting down…")
+    case "reboot": return qsTr("Restarting…")
+    case "suspend": return qsTr("Suspending…")
+    case "hibernate": return qsTr("Hibernating…")
+    default: return action
+    }
+  }
+
+  function powerPrompt(action) {
+    switch (action) {
+    case "shutdown": return qsTr("Enter your password to shut down")
+    case "reboot": return qsTr("Enter your password to restart")
+    case "suspend": return qsTr("Enter your password to suspend")
+    case "hibernate": return qsTr("Enter your password to hibernate")
+    default: return ""
     }
   }
 
@@ -69,7 +90,7 @@ Item {
   function submit() {
     if (!backend || backend.authenticating || backend.lockedOut) return
     if (passwordField.text.length === 0) {
-      showError(qsTr("请输入密码"))
+      showError(qsTr("Enter your password"))
       return
     }
     errorText = ""
@@ -78,7 +99,7 @@ Item {
   }
 
   function showError(message) {
-    errorText = String(message || qsTr("鉴权失败"))
+    errorText = String(message || qsTr("Authentication failed"))
     statusText = ""
     passwordField.selectAll()
     focusPassword()
@@ -88,13 +109,13 @@ Item {
 
   function showSuccess() {
     errorText = ""
-    statusText = qsTr("认证成功")
+    statusText = qsTr("Authenticated")
     passwordField.text = ""
   }
 
   function showPowerProgress(action) {
     errorText = ""
-    statusText = qsTr("正在%1…").arg(powerLabel(action))
+    statusText = powerProgress(action)
     passwordField.text = ""
   }
 
@@ -156,7 +177,7 @@ Item {
       width: parent.width
       topPadding: 2
       visible: card.testMode && card.statusText.length === 0
-      text: qsTr("演示模式：任意密码解锁，Esc 返回")
+      text: qsTr("Demo mode: any password unlocks, Esc goes back")
       color: "#99c9d5e8"
       font.pixelSize: 11
       horizontalAlignment: Text.AlignHCenter
@@ -186,8 +207,7 @@ Item {
         anchors.leftMargin: 12
         anchors.verticalCenter: parent.verticalCenter
         text: card.backend
-          ? qsTr("输入密码以%1").arg(card.powerLabel(
-              card.backend.pendingPowerAction)) : ""
+          ? card.powerPrompt(card.backend.pendingPowerAction) : ""
         color: "#ffe6b8"
         font.pixelSize: 12
         renderType: Text.NativeRendering
@@ -199,7 +219,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         width: 48
         height: 30
-        text: qsTr("取消")
+        text: qsTr("Cancel")
         onClicked: {
           if (card.backend) card.backend.CancelPowerAction()
           card.focusPassword()
@@ -224,8 +244,8 @@ Item {
         leftPadding: 14
         verticalAlignment: TextInput.AlignVCenter
         placeholderText: card.backend && card.backend.lockedOut
-          ? qsTr("已锁定")
-          : card.fingerprintListening ? qsTr("密码或指纹") : qsTr("密码")
+          ? qsTr("Locked")
+          : card.fingerprintListening ? qsTr("Password or fingerprint") : qsTr("Password")
         placeholderTextColor: "#80ffffff"
         color: "#f5f8ff"
         selectionColor: "#0081ff"
@@ -290,8 +310,8 @@ Item {
       readonly property string currentText: {
         if (card.errorText.length > 0) return card.errorText
         if (card.backend && card.backend.lockedOut) {
-          return qsTr("尝试次数过多，请在 %1 分钟后重试")
-            .arg(card.backend.lockMinutes)
+          return qsTr("Too many attempts. Try again in %n minute(s).", "",
+                      card.backend.lockMinutes)
         }
         return card.statusText
       }
@@ -347,7 +367,7 @@ Item {
 
     Text {
       width: parent.width
-      text: qsTr("按 Enter 解锁")
+      text: qsTr("Press Enter to unlock")
       color: "#66c9d5e8"
       font.pixelSize: 11
       horizontalAlignment: Text.AlignHCenter

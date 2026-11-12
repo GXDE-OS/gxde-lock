@@ -40,7 +40,7 @@ Key facts:
 | --- | --- |
 | `src/auth` | `SDDM::Auth` client: spawns the auth helper and speaks its socket protocol. |
 | `src/auth-helper` | `gxde-lock-auth-helper`: `HelperApp`, `PamBackend`, `PamHandle`. |
-| `src/common` | `Constants.h.in`, `SafeDataStream`, `MessageHandler`, `LockAppearance` (wallpaper/cursor state), `LockCursor`, `LockScale`, `SystemDefaults`, `FingerprintProbe`, `FingerprintSession`, `LogindSession` (logind Lock/Unlock, LockedHint), `LockState` (runtime lock flag read by the guard). |
+| `src/common` | `Constants.h.in`, `SafeDataStream`, `MessageHandler`, `LockAppearance` (wallpaper/cursor state), `LockCursor`, `LockScale`, `SystemDefaults`, `FingerprintProbe`, `FingerprintSession`, `LogindSession` (logind Lock/Unlock, LockedHint), `LockState` (runtime lock flag read by the guard), `LockTranslations` (installs the gxde-lock, qtbase and legacy gxde-session-ui translators). |
 | `src/guard` | `gxde-lock-guard`: `LockGuard` (supervisor), `BrokenNotice` and `NoticeWindow` (crash notice). |
 | `src/lock-classic` | DTK classic lock screen. `lock/` holds the locker and backend pieces (`LockWorker`, `LockShortcutManager`/`GxdeLockService`, `WaylandSessionLockIntegration`, `FingerprintUnlock`); `widgets/`, `session_widgets/`, `global_util/` hold the DDE widgets. |
 | `src/lock-common` | QML-facing facade (`LockBackend`, `UserListModel`), `LockStyleResolver`, `LockStyleManager`, media/volume/notification helpers and their tests. |
@@ -48,6 +48,7 @@ Key facts:
 | `src/system` | `gxde-lock-system`: `LockSystemService`, `SaveGeneralSetting`. |
 | `data` | D-Bus activation and policy files, `interfaces/top.gxde.Lock.System.xml`, autostart entry, `configs/OMG.conf`. |
 | `services` | PAM stacks (generic, Debian, FreeBSD). |
+| `translations` | `gxde-lock_<lang>.ts` catalogs (ar, en, es, fr, ru, zh_CN; English sources). Refresh with the `gxde-lock-lupdate` CMake target. |
 | `test` | QtTest suite for appearance, scale, system defaults, virtual keyboard, multi-screen, settings persistence and the auth protocol. |
 | `debian`, `arch` | Distribution packaging. |
 

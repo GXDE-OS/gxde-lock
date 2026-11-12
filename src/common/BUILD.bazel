@@ -73,12 +73,15 @@ qt_cc_library(
     name = "lock_session",
     srcs = [
         "LockState.cpp",
+        "LockTranslations.cpp",
         "LogindSession.cpp",
     ],
     hdrs = [
         "LockState.h",
+        "LockTranslations.h",
         "LogindSession.h",
     ],
     includes = ["."],
+    deps = [":constants"],
     moc_hdrs = ["LogindSession.h"],
 )

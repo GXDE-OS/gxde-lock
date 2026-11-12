@@ -1,0 +1,16 @@
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
+load("//bazel/qt:qt.bzl", "qt_lrelease_all")
+
+package(default_visibility = ["//visibility:public"])
+
+# Same catalogs as translations/CMakeLists.txt.
+qt_lrelease_all(
+    name = "qm",
+    ts_files = glob(["gxde-lock_*.ts"]),
+)
+
+pkg_files(
+    name = "translations_pkg",
+    srcs = [":qm"],
+    prefix = "/usr/share/gxde-lock/translations",
+)

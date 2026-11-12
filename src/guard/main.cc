@@ -21,6 +21,7 @@
 #include <QStringList>
 
 #include "Constants.h"
+#include "LockTranslations.h"
 #include "broken_notice.h"
 #include "lock_guard.h"
 
@@ -33,6 +34,7 @@ int RunNotice(int argc, char* argv[]) {
   QGuiApplication app(argc, argv);
   app.setApplicationName(QStringLiteral("gxde-lock-guard"));
   app.setQuitOnLastWindowClosed(false);
+  gxde::lock::InstallTranslations();
 
   gxde::lock::BrokenNotice notice;
   if (!notice.Start()) return 0;

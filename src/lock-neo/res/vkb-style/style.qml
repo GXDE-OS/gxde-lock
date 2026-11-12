@@ -66,7 +66,7 @@ KeyboardStyle {
       functionKey: true
 
       KeyLabel {
-        text: qsTr("删除")
+        text: qsTr("Backspace")
       }
     }
   }
@@ -77,7 +77,7 @@ KeyboardStyle {
       functionKey: true
 
       KeyLabel {
-        text: qsTr("确定")
+        text: qsTr("Enter")
       }
     }
   }
@@ -104,7 +104,7 @@ KeyboardStyle {
       key: control
 
       KeyLabel {
-        text: qsTr("空格")
+        text: qsTr("Space")
         color: currentStyle.secondaryTextColor
       }
     }
