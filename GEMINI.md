@@ -77,6 +77,8 @@ Key facts:
   descriptors, never as caller-supplied paths.
 - Per-user lock wallpaper overrides stay in
   `~/.local/share/gxde-lock/lock-wallpaper-override` and never go through root.
+  Setting or clearing one also sends a non-blocking call to GXDM's session
+  `top.gxde.DisplayManager` (`gxdm-settings-agent`) so the greeter shows it.
 - Crash recovery: the lockers keep `$XDG_RUNTIME_DIR/gxde-lock/locked-<display>`
   while locked. When the locker dies, the guard restarts it without
   `--daemon` if that flag exists (a new ext-session-lock client replaces the

@@ -200,6 +200,11 @@ Deepin Accounts `GreeterBackground`/`BackgroundFile`/`DesktopBackgrounds`,
 AccountsService, the GSettings desktop background, then the global lock
 wallpaper or the GXDE default.
 
+When GXDM is installed, `SetLockWallpaperOverride` and
+`ClearLockWallpaperOverride` also forward the change to GXDM's session
+`top.gxde.DisplayManager`, so the login screen shows the same wallpaper for
+that user. This is fire-and-forget; the lock screen never waits for GXDM.
+
 ### Fingerprint unlock
 See [docs/FINGERPRINT.md](./docs/FINGERPRINT.md) (Chinese).
 

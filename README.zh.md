@@ -189,6 +189,10 @@ busctl --user call top.gxde.Lock /top/gxde/Lock top.gxde.Lock SetLockScreenStyle
 `GreeterBackground`/`BackgroundFile`/`DesktopBackgrounds`、AccountsService、
 GSettings 桌面壁纸，最后是全局锁屏壁纸或 GXDE 默认壁纸。
 
+安装了 GXDM 时，`SetLockWallpaperOverride` 与 `ClearLockWallpaperOverride`
+还会把修改转发给 GXDM 会话总线上的 `top.gxde.DisplayManager`，让登录界面为该
+用户显示同一张壁纸。转发不等待结果，锁屏不会因 GXDM 而阻塞。
+
 ### 指纹解锁
 见 [docs/FINGERPRINT.md](./docs/FINGERPRINT.md)。
 

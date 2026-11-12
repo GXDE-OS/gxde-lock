@@ -1,5 +1,6 @@
 #include <QDBusConnection>
 #include <QDBusInterface>
+#include <QDBusMessage>
 #include <QDBusMetaType>
 #include <QDBusObjectPath>
 #include <QDBusReply>
@@ -33,6 +34,15 @@ const QString kAction = QStringLiteral("lock-screen");
 const QString kSystemService = QStringLiteral("top.gxde.Lock");
 const QString kSystemPath = QStringLiteral("/top/gxde/Lock");
 const QString kSystemInterface = QStringLiteral("top.gxde.Lock.System");
+
+// GXDM's session settings agent. The greeter shows each user's lock wallpaper
+// on the login screen, but runs as another user and cannot read ours, so we
+// push a copy there. Optional: nothing happens without GXDM installed.
+const QString kGreeterSettingsService =
+  QStringLiteral("top.gxde.DisplayManager");
+const QString kGreeterSettingsPath = QStringLiteral("/top/gxde/DisplayManager");
+const QString kGreeterSettingsInterface =
+  QStringLiteral("top.gxde.DisplayManager");
 
 constexpr uint kSetPresent = 2;
 constexpr uint kNoAutoloading = 4;
@@ -116,6 +126,15 @@ bool saveCurrentUserLockWallpaper(const QString& localPath) {
   return QFile::setPermissions(targetPath,
     QFileDevice::ReadOwner | QFileDevice::WriteOwner
     | QFileDevice::ReadGroup | QFileDevice::ReadOther);
+}
+
+// Fire and forget: the lock screen must not wait on the display manager.
+void pushOverrideToGreeter(const QString& method,
+    const QVariantList& arguments = {}) {
+  QDBusMessage call = QDBusMessage::createMethodCall(kGreeterSettingsService,
+    kGreeterSettingsPath, kGreeterSettingsInterface, method);
+  call.setArguments(arguments);
+  QDBusConnection::sessionBus().call(call, QDBus::NoBlock);
 }
 
 }  // namespace
@@ -379,6 +398,8 @@ bool GxdeLockService::SetLockWallpaperOverride(
   const QString localPath = url.isLocalFile() ? url.toLocalFile() : wallpaper;
   if (!saveCurrentUserLockWallpaper(localPath)) return false;
 
+  pushOverrideToGreeter(QStringLiteral("SetLockWallpaperOverride"),
+    {LockAppearance::lockWallpaperOverridePath(getuid())});
   m_manager->refreshLockWallpaper();
   return true;
 }
@@ -390,6 +411,7 @@ bool GxdeLockService::ClearLockWallpaperOverride() {
     return false;
   }
 
+  pushOverrideToGreeter(QStringLiteral("ClearLockWallpaperOverride"));
   m_manager->refreshLockWallpaper();
   return true;
 }
