@@ -22,5 +22,5 @@ AUTHOR=$(git config user.name)
 EMAIL=$(git config user.email)
 CUR_TIME=$(date '+%a, %d %b %Y %H:%M:%S %z')
 
-MSG="${HEADER} ${AUTHOR} <${EMAIL}> ${CUR_TIME}"
+MSG="${HEADER} ${AUTHOR} <${EMAIL}>  ${CUR_TIME}"
 echo "$MSG"

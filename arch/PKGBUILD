@@ -1,12 +1,12 @@
 # Maintainer: CharOfString <root@charofstring.cc>
 pkgname=gxde-lock-git
-pkgver=1.3.6
-pkgrel=6
+pkgver=2.0.0
+pkgrel=1
 pkgdesc='GXDE lock screen for X11 and Wayland, split out of the GXDE Display Manager'
 arch=('x86_64' 'aarch64')
 url="https://github.com/GXDE-OS/gxde-lock"
 license=('GPL-3.0-or-later' 'GPL-2.0-or-later')
-# 与 debian/control 相同 ・ As in debian/control.
+
 depends=('dtk2widget-qt6-git' 'dtk6core-git' 'dtk6log-git' 'qt6-base' 'qt6-declarative' 'qt6-svg'
          'qt6-virtualkeyboard' 'qt6-wayland' 'layer-shell-qt' 'gsettings-qt6' 'glib2' 'pam' 'systemd-libs' 'dbus'
          'libx11' 'libxcursor' 'libxext' 'libxfixes' 'libxi' 'libxrandr' 'libxtst'
@@ -24,10 +24,6 @@ _srcroot() {
 }
 
 build() {
-  # 与 debian/rules 相同；辅助程序放在 /usr/lib/gxde-lock，
-  # 不是 Debian 时 CMake 安装通用的（system-auth）PAM 配置
-  # Same as debian/rules.  The helpers go to /usr/lib/gxde-lock, and off
-  # Debian CMake installs the generic (system-auth) PAM files.
   cmake -B build -S "$(_srcroot)" -GNinja \
     -DCMAKE_BUILD_TYPE=None \
     -DCMAKE_INSTALL_PREFIX=/usr \

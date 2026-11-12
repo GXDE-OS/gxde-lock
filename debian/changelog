@@ -1,3 +1,12 @@
+gxde-lock (2.0.0-gxde1) unstable; urgency=medium
+
+  * 修复X11锁定时仅锁定主屏幕的问题
+  * 修复Wayland锁定时插拔屏幕造成的崩溃问题
+  * 若锁能被接管，新增崩溃时的提示屏幕
+  * 更新翻译文件
+
+ -- CharOfString <root@charofstring.cc>  Wed, 11 Nov 2026 18:14:39 -0600
+
 gxde-lock (1.3.6-gxde6) unstable; urgency=medium
 
   * 修复锁屏时间较长后不弹出密码框的问题
