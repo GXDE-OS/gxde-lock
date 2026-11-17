@@ -121,7 +121,7 @@ DTK at Debian paths from `MODULE.bazel`. When you add a source file, update both
 the `CMakeLists.txt` and the `BUILD.bazel` that own it.
 
 Packaging: `./build-deb -d` (Debian, package `gxde-lock`), `cd arch && makepkg
--si` (Arch, `gxde-lock-git`). `./update-pkgver` syncs `arch/PKGBUILD` from
+-si` (Arch, `gxde-lock`). `./update-pkgver` syncs `arch/PKGBUILD` from
 `debian/changelog`.
 
 ## 5. Testing

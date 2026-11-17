@@ -1,5 +1,5 @@
 # Maintainer: CharOfString <root@charofstring.cc>
-pkgname=gxde-lock-git
+pkgname=gxde-lock
 pkgver=2.0.0
 pkgrel=3
 pkgdesc='GXDE lock screen for X11 and Wayland, split out of the GXDE Display Manager'
@@ -7,13 +7,14 @@ arch=('x86_64' 'aarch64')
 url="https://github.com/GXDE-OS/gxde-lock"
 license=('GPL-3.0-or-later' 'GPL-2.0-or-later')
 
-depends=('dtk2widget-qt6-git' 'dtk6core-git' 'dtk6log-git' 'qt6-base' 'qt6-declarative' 'qt6-svg'
+depends=('dtk2widget-qt6' 'gxde-dtk6core' 'gxde-dtk6log' 'qt6-base' 'qt6-declarative' 'qt6-svg'
          'qt6-virtualkeyboard' 'qt6-wayland' 'layer-shell-qt' 'gsettings-qt6' 'glib2' 'pam' 'systemd-libs' 'dbus'
          'libx11' 'libxcursor' 'libxext' 'libxfixes' 'libxi' 'libxrandr' 'libxtst'
          'libgcc' 'libstdc++' 'glibc')
 makedepends=('git' 'cmake' 'ninja' 'pkgconf' 'qt6-tools' 'systemd' 'wayland-protocols')
-provides=('gxde-lock')
-conflicts=('gxde-lock')
+provides=("gxde-lock-git=$pkgver")
+conflicts=('gxde-lock-git')
+replaces=('gxde-lock-git')
 backup=('etc/gxde-lock/OMG.conf' 'etc/pam.d/gxde-lock' 'etc/pam.d/gxde-lock-fingerprint')
 source=()
 sha512sums=()
